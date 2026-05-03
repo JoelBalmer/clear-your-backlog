@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { and, eq, ne, sql } from 'drizzle-orm';
-import { db } from '../src/lib/db/client';
-import { profiles } from '../src/lib/db/schema';
+import { db } from './_lib/db';
+import { profiles } from './_lib/schema';
 import { requireAuth, setCors } from './_lib/auth';
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;

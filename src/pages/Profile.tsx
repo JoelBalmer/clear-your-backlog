@@ -16,7 +16,7 @@ import {
 import { logOutOutline, mailOutline } from 'ionicons/icons';
 import { SignOutButton, useUser } from '@clerk/clerk-react';
 import { useApi } from '../lib/api';
-import type { Profile as ProfileT } from '../lib/db/schema';
+import type { Profile as ProfileT } from '../types/models';
 
 type MeResp = { profile: ProfileT | null; needsOnboarding: boolean };
 

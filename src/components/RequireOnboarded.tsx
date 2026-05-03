@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { useApi } from '../lib/api';
-import type { Profile } from '../lib/db/schema';
+import type { Profile } from '../types/models';
 import AppLoading from './AppLoading';
 
 type MeResponse = { profile: Profile | null; needsOnboarding: boolean };

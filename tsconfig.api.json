@@ -14,5 +14,5 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["api/**/*.ts", "src/lib/db/**/*.ts"]
+  "include": ["api/**/*.ts"]
 }
