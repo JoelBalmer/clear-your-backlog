@@ -13,6 +13,7 @@ export type Profile = {
   displayName: string | null;
   avatarUrl: string | null;
   bio: string | null;
+  emailOptOut: boolean;
   createdAt: string;
 };
 

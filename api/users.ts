@@ -3,6 +3,7 @@ import { and, count, eq, sql } from 'drizzle-orm';
 import { db } from './_lib/db.js';
 import { follows, profiles, userGames } from './_lib/schema.js';
 import { getAuthedUser, requireAuth, setCors } from './_lib/auth.js';
+import { checkRateLimit } from './_lib/rate-limit.js';
 
 // GET /api/users?q=foo            -> { items: Profile[] } (auth)
 // GET /api/users?username=foo     -> { profile, counts, isFollowing, isSelf } (auth optional for the boolean)
@@ -13,6 +14,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const username = req.query.username ? String(req.query.username).toLowerCase() : null;
   if (username) return handleProfileLookup(req, res, username);
+
+  if (!checkRateLimit(req, res, { route: 'users-search', windowMs: 60_000, max: 30 })) return;
 
   const me = await requireAuth(req, res);
   if (!me) return;

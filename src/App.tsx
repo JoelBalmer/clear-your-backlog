@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -9,6 +10,19 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import OnboardingPage from './pages/OnboardingPage';
 import Tabs from './pages/Tabs';
+
+const PublicProfile = lazy(() => import('./pages/PublicProfile'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+
+function lazyRoute(Component: React.ComponentType) {
+  const Wrapped: React.FC = () => (
+    <Suspense fallback={<AppLoading />}>
+      <Component />
+    </Suspense>
+  );
+  return Wrapped;
+}
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -26,8 +40,9 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/* Theme */
-import '@ionic/react/css/palettes/dark.system.css';
+/* Theme — class palette so dark mode is controlled by ThemeContext, not the OS */
+import '@ionic/react/css/palettes/dark.class.css';
+import './theme/brand.css';
 import './theme/variables.css';
 import './theme/app.css';
 
@@ -71,6 +86,10 @@ const App: React.FC = () => (
               <Tabs />
             </RequireAuth>
           </Route>
+          {/* Top-level (no auth required) */}
+          <Route path="/u/:username" component={lazyRoute(PublicProfile)} />
+          <Route path="/privacy" component={lazyRoute(PrivacyPage)} />
+          <Route path="/terms" component={lazyRoute(TermsPage)} />
           <Route exact path="/">
             <RootRedirect />
           </Route>

@@ -18,11 +18,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 async function handleList(req: VercelRequest, res: VercelResponse) {
   const userIdParam = req.query.userId ? String(req.query.userId) : null;
-  const status = req.query.status ? String(req.query.status) : null;
+  // status param: comma-separated list of statuses; OR-filter (any match).
+  // Single string still works for backwards compatibility.
+  const statusFilter = req.query.status
+    ? String(req.query.status)
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter((s: string) => (STATUSES as readonly string[]).includes(s))
+    : [];
   const sort = String(req.query.sort ?? 'recent');
   // tags param: comma-separated tag IDs; matches games that have ALL of them (AND).
   const tagFilter = req.query.tags
-    ? String(req.query.tags).split(',').map((s) => s.trim()).filter(Boolean)
+    ? String(req.query.tags).split(',').map((s: string) => s.trim()).filter(Boolean)
     : [];
 
   // If no userId provided, default to caller's own library (requires auth).
@@ -34,8 +41,8 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
   }
 
   const conditions = [eq(userGames.userId, targetUserId)];
-  if (status && (STATUSES as readonly string[]).includes(status)) {
-    conditions.push(eq(userGames.status, status));
+  if (statusFilter.length > 0) {
+    conditions.push(inArray(userGames.status, statusFilter));
   }
 
   // AND-filter on tags: subquery returns user_game_ids that have all the requested tags.

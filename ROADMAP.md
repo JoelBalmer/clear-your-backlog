@@ -18,6 +18,7 @@ Last updated: 2026-05-03
 | 6     | Tags + multi-tag filter + code-split   | ✅ Complete     |
 | 7     | Full README + Capacitor mobile docs    | ✅ Complete     |
 | 8     | IGDB editorial rails on Discover       | ✅ Complete     |
+| 9     | Production polish: brand, theme, trust | ✅ Complete     |
 
 ---
 
@@ -115,9 +116,49 @@ Added after the 7-phase plan to address the cold-start problem (zero friends = e
 - `AddGameModal` accepts an optional `initialGame` prop and jumps straight to the add sheet when supplied.
 - Discover page rewrite: three rails ("Popular this season", "Coming soon", "All-time greats") render above the friends activity feed. Tapping a tile opens AddGameModal pre-selected so the user can add it in 2 taps. Gracefully shows a "Twitch credentials not configured" notice if `/api/igdb-search` returns 503.
 
+## Phase 9 — Production polish ✅
+
+Three buckets: brand identity, the user-flagged UX bugs, the legal/safety trust floor. Plus a hotfix for an auth-flow bug that was causing infinite loops for users trying Google OAuth on the sign-in page (the Clerk footer with the "Sign up" link had been hidden in my appearance config).
+
+### Brand + visual identity
+- `src/theme/brand.css` palette tokens (amber + coral on dark navy in dark mode, warm cream in light mode) — used by every component via CSS custom properties
+- `src/theme/variables.css` overrides Ionic's `--ion-color-primary` etc. so existing `<IonButton color="primary">` etc. automatically use brand colors
+- `BrandMark` SVG monogram component (pixel-art play triangle + start-button bar). Inline SVG, scales without an asset round-trip
+- New `public/icon.svg`, updated `manifest.json` with maskable icon entries, `index.html` with proper `apple-touch-icon` + theme-color meta + Press Start 2P preload + Open Graph defaults + `<noscript>` fallback
+- BrandMark applied to SignIn / SignUp pages (replaces the old purple gradient text)
+- Press Start 2P loaded for the wordmark only; body text stays system sans
+
+### UX bugs the user flagged
+- **Library segment overflow fixed**: dropped the 5-segment row (was truncating to "..." on mobile). Replaced with a single Filter button + sticky sort summary. Tapping Filter opens `LibraryFilterSheet` with multi-select status chips, multi-select tag chips, and sort radio. **More powerful than before** — multi-status filter wasn't possible with the old segment.
+- **Manual dark mode toggle**: switched from `dark.system.css` (auto-follow OS) to `dark.class.css`. New `ThemeContext` stores `light` / `dark` / `system` choice in localStorage and toggles `.ion-palette-dark` on `<html>`. Three-segment picker on Profile page.
+- **Skeleton loaders**: `GameCardSkeleton`, `RailSkeleton`, `UserListItemSkeleton` extracted from inline `IonSkeletonText` use. Library now shows 4 skeleton rows on load instead of a centred spinner.
+- **Haptic feedback**: thin wrapper `src/lib/haptics.ts` over `@capacitor/haptics` (already a dep). No-op on web. Wired into: AddGame submit success/fail, search-result tap, GameDetail rating/status changes, GameDetail delete, Friends + PublicProfile follow toggle, account delete confirmation.
+
+### Trust + legal floor
+- **Public profile route at `/u/:username`** (no auth required). Moved out of `/tabs/u/:username`. Signed-out visitors see the profile + library + counts; the Follow button is replaced with a "Sign in to follow" CTA. Used by `Profile`, `UserListItem`, and the GameDetail "Friends who played" links.
+- **Account deletion**: `DELETE /api/account` deletes the profile row first (cascades user_games, tags, follows) then the Clerk user. Two-step confirm in Profile → Danger zone (alert → "type DELETE" alert), signs out + redirects to /sign-in on success.
+- **Privacy + Terms pages** at `/privacy` and `/terms` (top-level, no auth). Cover what's collected, who can see what, deletion path. Linked from SignIn/SignUp footers and Profile → Legal section.
+- **Rate limiting**: `api/_lib/rate-limit.ts` — in-memory per-IP, per-route, 30 req / 60s. Applied to `/api/igdb-search` (Twitch token spend) and `/api/users?q=` (DB read amplification). Returns 429 with `Retry-After`. Memory-only, resets per cold start — not a WAF, just blocks dumb floods.
+
+### Backend consolidation (to make room)
+- `api/me.ts` merged into `api/profile.ts` (`GET /api/profile` with no params returns caller's profile). Frees a function slot, gets us to 12/12 again with `api/account.ts` added.
+- `api/profile.ts` also accepts `emailOptOut` in PATCH/POST body
+- `api/user-games.ts` extended to accept comma-separated `?status=` (was single value), enabling multi-status filtering from the new sheet
+
+### Hotfix (the friend's infinite loop)
+- Removed `appearance={{ elements: { footer: { display: 'none' } } }}` from `<SignIn />` and `<SignUp />`. That was hiding Clerk's "Don't have an account? Sign up" link, which left users stuck on a "External Account was not found" error when they tried Google OAuth on /sign-in without ever signing up first.
+
+### DB
+- Migration `0001_unknown_grey_gargoyle.sql` adds `profiles.email_opt_out boolean default false`. Applied.
+
+### Deferred (still in plan, postponed for separate ship)
+- **Weekly digest email cron** — would push past Vercel Hobby's 12-function cap. Pre-work landed (toggle UI, opt-out column). Will need to either consolidate another endpoint or move to Pro before adding.
+- **vite-plugin-pwa service worker** — deferred to keep this commit focused. Add-to-homescreen still works via the existing `manifest.json`; just no offline cache yet.
+- **Apple-touch-icon as PNG** — currently the SVG icon is reused. iOS Safari prefers PNG for the home-screen icon at 180×180; needs `@capacitor/assets` or similar to generate.
+
 ## Done
 
-All 8 phases complete. Future improvements (out of original scope):
+All 9 phases complete. Future improvements (out of original scope):
 
 - Clerk webhook for `user.deleted` to clean up orphan profile rows
 - Profile editing UI (display name, bio, avatar upload)

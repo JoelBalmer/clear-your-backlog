@@ -24,6 +24,7 @@ import StarRating from './StarRating';
 import TagPicker from './TagPicker';
 import { ApiError, useApi } from '../lib/api';
 import { searchIgdb } from '../lib/igdb/search';
+import { success as hapticSuccess, tap as hapticTap, error as hapticError } from '../lib/haptics';
 import type { GameStatus, IgdbResult } from '../types/models';
 
 type Props = {
@@ -133,8 +134,10 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
           },
         }),
       });
+      hapticSuccess();
       dismiss(true);
     } catch (err) {
+      hapticError();
       if (err instanceof ApiError && err.status === 409)
         setSubmitError('Already in your library.');
       else if (err instanceof ApiError) setSubmitError(`Failed (HTTP ${err.status})`);
@@ -202,7 +205,14 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
 
             <div>
               {results.map((r) => (
-                <div key={r.igdbId} className="search-result" onClick={() => setPicked(r)}>
+                <div
+                  key={r.igdbId}
+                  className="search-result"
+                  onClick={() => {
+                    hapticTap();
+                    setPicked(r);
+                  }}
+                >
                   <div className="search-result__cover">
                     {r.coverUrl ? (
                       <img src={r.coverUrl} alt={r.name} loading="lazy" />

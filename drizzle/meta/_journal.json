@@ -8,6 +8,13 @@
       "when": 1777834294243,
       "tag": "0000_fluffy_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777848912443,
+      "tag": "0001_unknown_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

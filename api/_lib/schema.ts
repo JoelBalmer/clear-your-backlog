@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   index,
   check,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -21,6 +22,7 @@ export const profiles = pgTable(
     displayName: text('display_name'),
     avatarUrl: text('avatar_url'),
     bio: text('bio'),
+    emailOptOut: boolean('email_opt_out').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('profiles_username_lower_idx').on(sql`lower(${t.username})`)],

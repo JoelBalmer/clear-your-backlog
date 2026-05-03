@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireAuth, setCors } from './_lib/auth.js';
 import { fetchRail, searchIgdb, type Rail } from './_lib/igdb.js';
+import { checkRateLimit } from './_lib/rate-limit.js';
 
 const VALID_RAILS: Rail[] = ['popular', 'upcoming', 'top'];
 
@@ -10,6 +11,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
+
+  if (!checkRateLimit(req, res, { route: 'igdb-search', windowMs: 60_000, max: 30 })) return;
 
   const user = await requireAuth(req, res);
   if (!user) return;

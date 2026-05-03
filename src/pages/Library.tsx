@@ -6,50 +6,34 @@ import {
   IonFabButton,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
   IonList,
   IonNote,
   IonPage,
   IonRefresher,
   IonRefresherContent,
-  IonSegment,
-  IonSegmentButton,
-  IonSelect,
-  IonSelectOption,
-  IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { add, libraryOutline } from 'ionicons/icons';
+import { add, libraryOutline, optionsOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
 import GameCard from '../components/GameCard';
 import AddGameModal from '../components/AddGameModal';
-import TagChip from '../components/TagChip';
+import LibraryFilterSheet, { type SortValue } from '../components/LibraryFilterSheet';
+import GameCardSkeleton from '../components/Skeleton/GameCardSkeleton';
 import type { GameStatus, Tag, UserGameWithGame } from '../types/models';
-
-type SegValue = 'all' | GameStatus;
-type SortValue = 'recent' | 'rating' | 'name';
 
 type ListResp = { items: UserGameWithGame[] };
 type TagsResp = { items: Tag[] };
 
-const SEGMENTS: { value: SegValue; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'backlog', label: 'Backlog' },
-  { value: 'playing', label: 'Playing' },
-  { value: 'played', label: 'Played' },
-  { value: 'dropped', label: 'Dropped' },
-];
-
 const Library: React.FC = () => {
   const api = useApi();
-  const [seg, setSeg] = useState<SegValue>('all');
+  const [statuses, setStatuses] = useState<GameStatus[]>([]);
   const [sort, setSort] = useState<SortValue>('recent');
   const [items, setItems] = useState<UserGameWithGame[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
 
@@ -57,7 +41,7 @@ const Library: React.FC = () => {
     try {
       setError(null);
       const params = new URLSearchParams({ sort });
-      if (seg !== 'all') params.set('status', seg);
+      if (statuses.length > 0) params.set('status', statuses.join(','));
       if (activeTagIds.length > 0) params.set('tags', activeTagIds.join(','));
       const r = await api<ListResp>(`/api/user-games?${params}`);
       setItems(r.items);
@@ -66,7 +50,7 @@ const Library: React.FC = () => {
       else setError('Network error');
       setItems([]);
     }
-  }, [api, seg, sort, activeTagIds]);
+  }, [api, statuses, sort, activeTagIds]);
 
   useEffect(() => {
     load();
@@ -78,11 +62,7 @@ const Library: React.FC = () => {
       .catch(() => setAllTags([]));
   }, [api]);
 
-  const toggleTagFilter = (id: string) => {
-    setActiveTagIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
+  const activeFilterCount = statuses.length + activeTagIds.length;
 
   return (
     <IonPage>
@@ -91,73 +71,31 @@ const Library: React.FC = () => {
           <IonTitle>Library</IonTitle>
         </IonToolbar>
         <IonToolbar>
-          <IonSegment
-            value={seg}
-            onIonChange={(e) => setSeg((e.detail.value as SegValue) ?? 'all')}
-            scrollable
-          >
-            {SEGMENTS.map((s) => (
-              <IonSegmentButton key={s.value} value={s.value}>
-                <IonLabel>{s.label}</IonLabel>
-              </IonSegmentButton>
-            ))}
-          </IonSegment>
+          <div className="library-toolbar">
+            <IonButton
+              fill="outline"
+              size="small"
+              className="library-toolbar__filter"
+              onClick={() => setShowFilter(true)}
+            >
+              <IonIcon icon={optionsOutline} slot="start" />
+              Filter
+              {activeFilterCount > 0 && (
+                <span className="library-toolbar__count">{activeFilterCount}</span>
+              )}
+            </IonButton>
+            <IonNote color="medium" style={{ fontSize: 12, marginLeft: 'auto' }}>
+              {sort === 'recent' && 'Recently updated'}
+              {sort === 'rating' && 'Highest rated'}
+              {sort === 'name' && 'A–Z'}
+            </IonNote>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonRefresher slot="fixed" onIonRefresh={(e) => load().finally(() => e.detail.complete())}>
           <IonRefresherContent />
         </IonRefresher>
-
-        <IonItem lines="none">
-          <IonLabel style={{ fontSize: 13, color: 'var(--ion-color-medium)' }}>Sort</IonLabel>
-          <IonSelect
-            value={sort}
-            interface="popover"
-            onIonChange={(e) => setSort((e.detail.value as SortValue) ?? 'recent')}
-          >
-            <IonSelectOption value="recent">Recently updated</IonSelectOption>
-            <IonSelectOption value="rating">Highest rated</IonSelectOption>
-            <IonSelectOption value="name">Name (A–Z)</IonSelectOption>
-          </IonSelect>
-        </IonItem>
-
-        {allTags.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              padding: '4px 16px 12px',
-              overflowX: 'auto',
-              flexWrap: 'nowrap',
-            }}
-          >
-            {allTags.map((t) => (
-              <TagChip
-                key={t.id}
-                name={t.name}
-                color={t.color}
-                selected={activeTagIds.includes(t.id)}
-                onClick={() => toggleTagFilter(t.id)}
-              />
-            ))}
-            {activeTagIds.length > 0 && (
-              <span
-                onClick={() => setActiveTagIds([])}
-                style={{
-                  fontSize: 12,
-                  color: 'var(--ion-color-medium)',
-                  alignSelf: 'center',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  padding: '4px 6px',
-                }}
-              >
-                Clear
-              </span>
-            )}
-          </div>
-        )}
 
         {error && (
           <IonText color="danger">
@@ -166,9 +104,11 @@ const Library: React.FC = () => {
         )}
 
         {items === null && !error && (
-          <div style={{ display: 'grid', placeItems: 'center', padding: 48 }}>
-            <IonSpinner name="crescent" />
-          </div>
+          <IonList lines="full">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <GameCardSkeleton key={i} />
+            ))}
+          </IonList>
         )}
 
         {items && items.length === 0 && !error && (
@@ -176,13 +116,30 @@ const Library: React.FC = () => {
             <div className="empty-state__icon">
               <IonIcon icon={libraryOutline} />
             </div>
-            <h2>{seg === 'all' ? 'Your library is empty' : `Nothing in ${seg}`}</h2>
+            <h2>{activeFilterCount === 0 ? 'Your library is empty' : 'No games match'}</h2>
             <IonNote color="medium">
-              <p>Tap the + button to search the IGDB catalog and add a game.</p>
+              <p>
+                {activeFilterCount === 0
+                  ? 'Tap the + button to search the IGDB catalog and add a game.'
+                  : 'Try clearing some filters or adding a new game.'}
+              </p>
             </IonNote>
-            <IonButton onClick={() => setShowAdd(true)} style={{ marginTop: 16 }}>
-              Add a game
-            </IonButton>
+            {activeFilterCount === 0 ? (
+              <IonButton onClick={() => setShowAdd(true)} style={{ marginTop: 16 }}>
+                Add a game
+              </IonButton>
+            ) : (
+              <IonButton
+                fill="outline"
+                onClick={() => {
+                  setStatuses([]);
+                  setActiveTagIds([]);
+                }}
+                style={{ marginTop: 16 }}
+              >
+                Clear filters
+              </IonButton>
+            )}
           </div>
         )}
 
@@ -209,6 +166,23 @@ const Library: React.FC = () => {
           onDismiss={(added) => {
             setShowAdd(false);
             if (added) load();
+          }}
+        />
+
+        <LibraryFilterSheet
+          isOpen={showFilter}
+          onDismiss={() => setShowFilter(false)}
+          statuses={statuses}
+          onStatusesChange={setStatuses}
+          tags={allTags}
+          activeTagIds={activeTagIds}
+          onTagsChange={setActiveTagIds}
+          sort={sort}
+          onSortChange={setSort}
+          onClear={() => {
+            setStatuses([]);
+            setActiveTagIds([]);
+            setSort('recent');
           }}
         />
       </IonContent>

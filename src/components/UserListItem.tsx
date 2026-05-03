@@ -7,7 +7,7 @@ const UserListItem: React.FC<{ profile: Profile; trailing?: React.ReactNode }> =
 }) => {
   const initial = (profile.displayName ?? profile.username ?? '?').slice(0, 1).toUpperCase();
   return (
-    <IonItem button detail={!trailing} routerLink={trailing ? undefined : `/tabs/u/${profile.username}`}>
+    <IonItem button detail={!trailing} routerLink={trailing ? undefined : `/u/${profile.username}`}>
       <div
         slot="start"
         style={{

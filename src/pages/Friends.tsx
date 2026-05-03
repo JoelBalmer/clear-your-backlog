@@ -21,6 +21,7 @@ import { peopleOutline, searchOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
 import { useMe } from '../contexts/MeContext';
 import UserListItem from '../components/UserListItem';
+import { tap as hapticTap } from '../lib/haptics';
 import type { FollowItem, Profile } from '../types/models';
 
 type Tab = 'search' | 'following' | 'followers';
@@ -102,6 +103,7 @@ const Friends: React.FC = () => {
 
   const toggleFollow = async (target: Profile) => {
     if (!me || target.id === me.id) return;
+    hapticTap();
     const isFollowing = followingIds.has(target.id);
     const next = new Set(followingIds);
     if (isFollowing) next.delete(target.id);

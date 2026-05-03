@@ -18,9 +18,11 @@ import {
 } from '@ionic/react';
 import { gameControllerOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 import { ApiError, useApi } from '../lib/api';
 import StatusBadge from '../components/StatusBadge';
 import StarRating from '../components/StarRating';
+import { tap as hapticTap } from '../lib/haptics';
 import type { PublicProfile as PProfile, UserGameWithGame } from '../types/models';
 
 type PProfileResp = PProfile;
@@ -29,6 +31,7 @@ type ListResp = { items: UserGameWithGame[] };
 const PublicProfile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
   const api = useApi();
+  const { isSignedIn } = useAuth();
   const [data, setData] = useState<PProfile | null>(null);
   const [library, setLibrary] = useState<UserGameWithGame[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +57,7 @@ const PublicProfile: React.FC = () => {
 
   const toggleFollow = async () => {
     if (!data || data.isSelf) return;
+    hapticTap();
     setWorking(true);
     try {
       if (data.isFollowing) {
@@ -81,12 +85,14 @@ const PublicProfile: React.FC = () => {
     }
   };
 
+  const backHref = isSignedIn ? '/tabs/friends' : '/sign-in';
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/tabs/friends" />
+            <IonBackButton defaultHref={backHref} />
           </IonButtons>
           <IonTitle>{data?.profile.username ? `@${data.profile.username}` : ''}</IonTitle>
         </IonToolbar>
@@ -131,9 +137,14 @@ const PublicProfile: React.FC = () => {
                 <Stat n={data.counts.following} label="Following" />
               </div>
 
-              {!data.isSelf && (
+              {!data.isSelf && isSignedIn && (
                 <IonButton onClick={toggleFollow} disabled={working} fill={data.isFollowing ? 'outline' : 'solid'} style={{ marginTop: 8 }}>
                   {working ? <IonSpinner name="dots" /> : data.isFollowing ? 'Following' : 'Follow'}
+                </IonButton>
+              )}
+              {!data.isSelf && !isSignedIn && (
+                <IonButton routerLink="/sign-in" style={{ marginTop: 8 }}>
+                  Sign in to follow
                 </IonButton>
               )}
             </div>

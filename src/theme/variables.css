@@ -1,2 +1,61 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* Ionic theme overrides — wires our brand tokens into the IonButton color="primary" etc. */
+
+:root {
+  /* App background pulls from brand */
+  --ion-background-color: var(--brand-bg);
+  --ion-background-color-rgb: 251, 247, 238;
+  --ion-text-color: var(--brand-text);
+  --ion-text-color-rgb: 26, 23, 51;
+
+  /* Primary = amber (the brand) */
+  --ion-color-primary: #f59e0b;
+  --ion-color-primary-rgb: 245, 158, 11;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #d88a09;
+  --ion-color-primary-tint: #f6a823;
+
+  /* Secondary = coral */
+  --ion-color-secondary: #fb7185;
+  --ion-color-secondary-rgb: 251, 113, 133;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #dd6375;
+  --ion-color-secondary-tint: #fb7f91;
+
+  /* Success = mint */
+  --ion-color-success: #34d399;
+  --ion-color-success-rgb: 52, 211, 153;
+  --ion-color-success-contrast: #0f1530;
+  --ion-color-success-contrast-rgb: 15, 21, 48;
+  --ion-color-success-shade: #2eba87;
+  --ion-color-success-tint: #48d7a3;
+
+  /* Danger keeps a red but pulls toward our coral family */
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
+
+  /* Warning = amber but lighter */
+  --ion-color-warning: #fbbf24;
+  --ion-color-warning-rgb: 251, 191, 36;
+  --ion-color-warning-contrast: #1a1733;
+  --ion-color-warning-contrast-rgb: 26, 23, 51;
+  --ion-color-warning-shade: #dda820;
+  --ion-color-warning-tint: #fbc53a;
+}
+
+.ion-palette-dark {
+  --ion-background-color: var(--brand-bg);
+  --ion-background-color-rgb: 15, 21, 48;
+  --ion-text-color: var(--brand-text);
+  --ion-text-color-rgb: 241, 236, 220;
+
+  --ion-toolbar-background: #161d3d;
+  --ion-tab-bar-background: #161d3d;
+  --ion-item-background: #161d3d;
+  --ion-card-background: #1c2548;
+}

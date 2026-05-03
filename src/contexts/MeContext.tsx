@@ -26,7 +26,7 @@ export const MeProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setStatus('loading');
     setError(null);
     try {
-      const r = await api<MeResponse>('/api/me');
+      const r = await api<MeResponse>('/api/profile');
       if (r.needsOnboarding || !r.profile) {
         setProfile(null);
         setStatus('no-profile');

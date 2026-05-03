@@ -26,6 +26,7 @@ import { ApiError, useApi } from '../lib/api';
 import StarRating from '../components/StarRating';
 import StatusBadge from '../components/StatusBadge';
 import TagPicker from '../components/TagPicker';
+import { tap as hapticTap, success as hapticSuccess, warning as hapticWarning } from '../lib/haptics';
 import type { FriendPlayedItem, Game, GameStatus, UserGame, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
@@ -81,6 +82,7 @@ const GameDetail: React.FC = () => {
 
   const patch = async (key: string, body: Record<string, unknown>) => {
     if (!userGame) return;
+    hapticTap();
     setSavingField(key);
     try {
       const r = await api<UpdateResp>(`/api/user-games/${userGame.id}`, {
@@ -121,8 +123,10 @@ const GameDetail: React.FC = () => {
 
   const remove = async () => {
     if (!userGame) return;
+    hapticWarning();
     try {
       await api(`/api/user-games/${userGame.id}`, { method: 'DELETE' });
+      hapticSuccess();
       history.replace('/tabs/library');
     } catch (err) {
       console.error('[game-detail] delete failed:', err);
@@ -305,7 +309,7 @@ const GameDetail: React.FC = () => {
                     key={f.profile.id}
                     button
                     detail={false}
-                    routerLink={`/tabs/u/${f.profile.username}`}
+                    routerLink={`/u/${f.profile.username}`}
                   >
                     <div
                       slot="start"
