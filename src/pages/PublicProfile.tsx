@@ -37,7 +37,7 @@ const PublicProfile: React.FC = () => {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const r = await api<PProfileResp>(`/api/users/${encodeURIComponent(username)}`);
+      const r = await api<PProfileResp>(`/api/users?username=${encodeURIComponent(username)}`);
       setData(r);
       const lib = await api<ListResp>(`/api/user-games?userId=${r.profile.id}&sort=rating`);
       setLibrary(lib.items);

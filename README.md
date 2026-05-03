@@ -86,9 +86,8 @@ api/                    # Vercel serverless functions, one per route.
     igdb.ts             # Twitch token cache + IGDB v4 search/fetch helpers
   me.ts                 # GET    /api/me                       — current user's profile
   profile.ts            # POST   /api/profile                  — claim/update username
-  profile/
-    check-username.ts   # GET    /api/profile/check-username?u=foo
-  user-games.ts         # GET    /api/user-games?status=&sort=&tags= — list (defaults to caller)
+                        # GET    /api/profile?check=foo        — username availability check
+  user-games.ts         # GET    /api/user-games?status=&sort=&tags=&userId=  — list
                         # POST   /api/user-games               — add game (upserts cache, links tags)
   user-games/
     [id].ts             # PATCH  /api/user-games/:id           — rating/status/notes
@@ -106,8 +105,7 @@ api/                    # Vercel serverless functions, one per route.
                         # POST   /api/follows                  — follow
                         # DELETE /api/follows?followingId=     — unfollow
   users.ts              # GET    /api/users?q=                 — username prefix search
-  users/
-    [username].ts       # GET    /api/users/:username          — profile + counts + isFollowing
+                        # GET    /api/users?username=foo       — public profile + counts
   feed.ts               # GET    /api/feed                     — activity from followees
 
 src/

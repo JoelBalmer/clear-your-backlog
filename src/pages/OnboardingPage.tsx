@@ -60,7 +60,7 @@ const OnboardingPage: React.FC = () => {
     setCheck({ status: 'checking' });
     const t = setTimeout(async () => {
       try {
-        const r = await api<CheckResp>(`/api/profile/check-username?u=${encodeURIComponent(u)}`);
+        const r = await api<CheckResp>(`/api/profile?check=${encodeURIComponent(u)}`);
         if (r.available) setCheck({ status: 'ok' });
         else if (r.reason === 'invalid_format') setCheck({ status: 'invalid' });
         else setCheck({ status: 'taken' });
