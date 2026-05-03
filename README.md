@@ -2,7 +2,7 @@
 
 Personal game rating + social app. Track what you've played, rate it, share lists with friends. Mobile-first via Ionic, ships to web (Vercel) and later to iOS/Android (Capacitor).
 
-> **Status:** Phase 4 of 7 (auth + library + game detail complete). See [ROADMAP.md](./ROADMAP.md) for the full plan and current progress.
+> **Status:** Phase 5 of 7 (auth + library + social complete; only polish + final docs left). See [ROADMAP.md](./ROADMAP.md) for the full plan and current progress.
 
 ---
 

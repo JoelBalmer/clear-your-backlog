@@ -24,11 +24,13 @@ import { gameControllerOutline, trashOutline } from 'ionicons/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import { ApiError, useApi } from '../lib/api';
 import StarRating from '../components/StarRating';
-import type { Game, GameStatus, UserGame, UserGameWithGame } from '../types/models';
+import StatusBadge from '../components/StatusBadge';
+import type { FriendPlayedItem, Game, GameStatus, UserGame, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
 type GameResp = { game: Game };
 type UpdateResp = { userGame: UserGame };
+type FriendsResp = { items: FriendPlayedItem[] };
 
 const STATUSES: { value: GameStatus; label: string }[] = [
   { value: 'backlog', label: 'Backlog' },
@@ -45,6 +47,7 @@ const GameDetail: React.FC = () => {
 
   const [game, setGame] = useState<Game | null>(null);
   const [userGame, setUserGame] = useState<UserGame | null>(null);
+  const [friends, setFriends] = useState<FriendPlayedItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savingField, setSavingField] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -53,14 +56,16 @@ const GameDetail: React.FC = () => {
   const load = useCallback(async () => {
     setLoadError(null);
     try {
-      const [gameR, listR] = await Promise.all([
+      const [gameR, listR, friendsR] = await Promise.all([
         api<GameResp>(`/api/games/${id}`),
         api<ListResp>(`/api/user-games`),
+        api<FriendsResp>(`/api/game-friends?igdbId=${id}`).catch(() => ({ items: [] })),
       ]);
       setGame(gameR.game);
       const mine = listR.items.find((it) => it.userGame.igdbId === id);
       setUserGame(mine?.userGame ?? null);
       setNotesDraft(mine?.userGame.notes ?? '');
+      setFriends(friendsR.items);
     } catch (err) {
       if (err instanceof ApiError) setLoadError(`HTTP ${err.status}`);
       else setLoadError('Network error');
@@ -252,6 +257,53 @@ const GameDetail: React.FC = () => {
               <p>Not in your library yet.</p>
             </IonText>
           </div>
+        )}
+
+        {friends.length > 0 && (
+          <>
+            <h3 style={{ padding: '8px 16px 4px', margin: 0, fontSize: 13, fontWeight: 600, letterSpacing: 0.5, color: 'var(--ion-color-medium)', textTransform: 'uppercase' }}>
+              Friends who played
+            </h3>
+            <IonList lines="full">
+              {friends.map((f) => {
+                const r = f.userGame.rating != null ? Number(f.userGame.rating) : null;
+                return (
+                  <IonItem
+                    key={f.profile.id}
+                    button
+                    detail={false}
+                    routerLink={`/tabs/u/${f.profile.username}`}
+                  >
+                    <div
+                      slot="start"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+                        color: 'white',
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontWeight: 700,
+                        fontSize: 14,
+                      }}
+                    >
+                      {(f.profile.displayName ?? f.profile.username).slice(0, 1).toUpperCase()}
+                    </div>
+                    <IonLabel>
+                      <h3 style={{ fontWeight: 600, margin: 0 }}>
+                        {f.profile.displayName || f.profile.username}
+                      </h3>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                        <StatusBadge status={f.userGame.status} size="sm" />
+                        {r !== null && <StarRating value={r} size={12} />}
+                      </div>
+                    </IonLabel>
+                  </IonItem>
+                );
+              })}
+            </IonList>
+          </>
         )}
 
         {game.summary && (

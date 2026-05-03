@@ -16,6 +16,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { ApiError, useApi } from '../lib/api';
+import { useMe } from '../contexts/MeContext';
 
 type CheckResp = { available: boolean; reason?: string; self?: boolean };
 
@@ -34,6 +35,7 @@ const OnboardingPage: React.FC = () => {
   const { user } = useUser();
   const api = useApi();
   const history = useHistory();
+  const { reload: reloadMe } = useMe();
 
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState(user?.firstName ?? '');
@@ -89,6 +91,7 @@ const OnboardingPage: React.FC = () => {
           displayName: displayName.trim() || null,
         }),
       });
+      await reloadMe();
       history.replace('/tabs/library');
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) setSubmitError('That username is taken.');

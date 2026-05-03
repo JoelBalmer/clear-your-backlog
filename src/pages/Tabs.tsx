@@ -19,6 +19,7 @@ import Discover from './Discover';
 import Friends from './Friends';
 import Profile from './Profile';
 import GameDetail from './GameDetail';
+import PublicProfile from './PublicProfile';
 
 const Tabs: React.FC = () => (
   <RequireOnboarded>
@@ -29,6 +30,7 @@ const Tabs: React.FC = () => (
         <Route exact path="/tabs/discover" component={Discover} />
         <Route exact path="/tabs/friends" component={Friends} />
         <Route exact path="/tabs/profile" component={Profile} />
+        <Route exact path="/tabs/u/:username" component={PublicProfile} />
         <Route exact path="/tabs">
           <Redirect to="/tabs/library" />
         </Route>

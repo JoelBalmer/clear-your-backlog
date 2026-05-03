@@ -14,8 +14,8 @@ Last updated: 2026-05-03
 | 2     | DB schema (Neon + Drizzle)             | ✅ Complete     |
 | 3     | Auth (Clerk) + onboarding + tab shell  | ✅ Complete     |
 | 4     | IGDB proxy + Library + GameDetail      | ✅ Complete     |
-| 5     | Discover + Friends + public profiles   | ⏳ Up next      |
-| 6     | Reusable components polish             | ⬜ Pending      |
+| 5     | Discover + Friends + public profiles   | ✅ Complete     |
+| 6     | Reusable components polish             | ⏳ Up next      |
 | 7     | Full README + mobile build instructions| ⬜ Pending      |
 
 ---
@@ -68,13 +68,20 @@ Last updated: 2026-05-03
 
 Permissions are enforced in API handlers (`requireAuth()` from `api/_lib/auth.ts` using Clerk's `authenticateRequest` with bearer token). DB-level RLS is not used — that came with Supabase, which we swapped out.
 
-## Phase 5 — Discover + Friends + public profiles ⬜
+## Phase 5 — Discover + Friends + public profiles ✅
 
-- Discover: activity feed (followed users' recent rates and status changes), top-rated leaderboard
-- Friends: search by username, Following / Followers tabs, follow/unfollow
-- Public profile at `/u/:username`: top-rated games, recent activity, follow button
-- API: `POST/DELETE /api/follows`, `GET /api/follows?userId=...`, `GET /api/profile/by-username/:u`, search endpoint
-- Show "friends who played this" on GameDetail
+- `api/follows.ts` — GET (`?userId=X&role=following|followers`), POST `{ followingId }`, DELETE `?followingId=X`. DB constraint blocks self-follows; conflict-do-nothing makes follow idempotent.
+- `api/users.ts` — username prefix search (auth required), 2-char minimum, escapes LIKE metacharacters.
+- `api/users/[username].ts` — public profile: `{ profile, counts: { followers, following, gamesPlayed }, isFollowing, isSelf }`. `isFollowing` works without auth (returns false).
+- `api/feed.ts` — recent `user_games` from people the caller follows, joined with `games_cache` and the actor's `profile`. Limit param.
+- `api/game-friends.ts` — followees who have a given `igdbId` in their library. Flat URL to dodge the `[igdbId].ts` vs `[igdbId]/` folder collision.
+- `MeContext` — single source of truth for caller's profile (was duplicated across `RequireOnboarded` and `Profile`); exposes `reload()` so onboarding-submit refreshes the gate without page reload.
+- `UserListItem` component — avatar + handle row; reused on Friends and friends-played list.
+- Friends page rewrite: Search / Following / Followers segment, debounced username search, optimistic follow toggle.
+- Discover page rewrite: activity feed with relative timestamps, taps through to GameDetail.
+- `PublicProfile` page at `/tabs/u/:username` — avatar, follower/following/games stats, follow button, top-rated games.
+- GameDetail: "Friends who played this" section with their status + rating.
+- Routes wired in `Tabs.tsx`; `MeProvider` wraps the router in `App.tsx`.
 
 ## Phase 6 — Reusable components ⬜
 

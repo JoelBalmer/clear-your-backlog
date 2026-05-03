@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -13,28 +12,14 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { logOutOutline, mailOutline } from 'ionicons/icons';
+import { logOutOutline, mailOutline, openOutline } from 'ionicons/icons';
 import { SignOutButton, useUser } from '@clerk/clerk-react';
-import { useApi } from '../lib/api';
-import type { Profile as ProfileT } from '../types/models';
-
-type MeResp = { profile: ProfileT | null; needsOnboarding: boolean };
+import { useMe } from '../contexts/MeContext';
 
 const Profile: React.FC = () => {
   const { user } = useUser();
-  const api = useApi();
-  const [profile, setProfile] = useState<ProfileT | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    api<MeResp>('/api/me')
-      .then((r) => !cancelled && setProfile(r.profile))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [api]);
+  const { profile, status } = useMe();
+  const loading = status === 'loading';
 
   const initial = (profile?.displayName ?? profile?.username ?? user?.firstName ?? '?')
     .slice(0, 1)
@@ -61,9 +46,7 @@ const Profile: React.FC = () => {
               <h1 className="profile-header__name">
                 {profile?.displayName || profile?.username || 'Anonymous'}
               </h1>
-              {profile?.username && (
-                <p className="profile-header__handle">@{profile.username}</p>
-              )}
+              {profile?.username && <p className="profile-header__handle">@{profile.username}</p>}
             </>
           )}
         </div>
@@ -81,6 +64,15 @@ const Profile: React.FC = () => {
               </IonLabel>
             </IonItem>
           )}
+          {profile?.username && (
+            <IonItem button detail routerLink={`/tabs/u/${profile.username}`}>
+              <IonIcon slot="start" icon={openOutline} />
+              <IonLabel>
+                <h3>View public profile</h3>
+                <IonNote color="medium">@{profile.username}</IonNote>
+              </IonLabel>
+            </IonItem>
+          )}
           <SignOutButton>
             <IonItem button detail={false}>
               <IonIcon slot="start" icon={logOutOutline} color="danger" />
@@ -91,8 +83,7 @@ const Profile: React.FC = () => {
 
         <div style={{ padding: '8px 16px 32px' }}>
           <IonNote color="medium" style={{ fontSize: 12 }}>
-            Phase 3 of 7 — auth complete. Library, Discover, and Friends are placeholders until
-            Phases 4–5 land.
+            Phase 5 of 7 — social features (friends, feed, public profiles) live.
           </IonNote>
         </div>
       </IonContent>

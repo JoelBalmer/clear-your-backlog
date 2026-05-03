@@ -67,3 +67,30 @@ export type UserGameWithGame = {
   userGame: UserGame;
   game: Game;
 };
+
+// Result shape for /api/feed
+export type FeedItem = {
+  userGame: UserGame;
+  game: Game;
+  actor: Profile;
+};
+
+// Result shape for /api/follows
+export type FollowItem = {
+  profile: Profile;
+  since: string;
+};
+
+// Result shape for /api/users/:username
+export type PublicProfile = {
+  profile: Profile;
+  counts: { followers: number; following: number; gamesPlayed: number };
+  isFollowing: boolean;
+  isSelf: boolean;
+};
+
+// Result shape for /api/game-friends
+export type FriendPlayedItem = {
+  profile: Profile;
+  userGame: UserGame;
+};

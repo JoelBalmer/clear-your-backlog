@@ -2,6 +2,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
+import { MeProvider } from './contexts/MeContext';
 import RequireAuth from './components/RequireAuth';
 import AppLoading from './components/AppLoading';
 import SignInPage from './pages/SignInPage';
@@ -41,6 +42,7 @@ const RootRedirect: React.FC = () => {
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
+      <MeProvider>
       <IonRouterOutlet>
         <Switch>
           <Route path="/sign-in">
@@ -77,6 +79,7 @@ const App: React.FC = () => (
           </Route>
         </Switch>
       </IonRouterOutlet>
+      </MeProvider>
     </IonReactRouter>
   </IonApp>
 );
