@@ -13,8 +13,8 @@ Last updated: 2026-05-03
 | 1     | Scaffold + Vercel + GitHub + CI        | ✅ Complete     |
 | 2     | DB schema (Neon + Drizzle)             | ✅ Complete     |
 | 3     | Auth (Clerk) + onboarding + tab shell  | ✅ Complete     |
-| 4     | IGDB proxy + permission-gated APIs     | ⏳ Up next      |
-| 5     | Core screens (Library, Discover, etc.) | ⬜ Pending      |
+| 4     | IGDB proxy + Library + GameDetail      | ✅ Complete     |
+| 5     | Discover + Friends + public profiles   | ⏳ Up next      |
 | 6     | Reusable components polish             | ⬜ Pending      |
 | 7     | Full README + mobile build instructions| ⬜ Pending      |
 
@@ -53,29 +53,28 @@ Last updated: 2026-05-03
 - Profile page reads `/api/me` and includes a SignOut button
 - No Clerk webhook for profile creation — profiles are created lazily on first onboarding submit. Webhook for `user.deleted` cleanup deferred until needed.
 
-## Phase 4 — IGDB proxy + permission-gated APIs ⏳
+## Phase 4 — IGDB proxy + Library + GameDetail ✅
 
-- `api/igdb-search.ts` — Vercel function: cached Twitch token, IGDB v4 search, cover URL transform, Clerk JWT required, CORS allowlist
-- `src/lib/igdb/search.ts` — frontend wrapper
-- API routes that replace what Supabase RLS would have done — each verifies the Clerk session and scopes writes to `userId === session.userId`:
-  - `POST /api/user-games` — add game to library
-  - `PATCH /api/user-games/:id` — update rating/status/notes
-  - `DELETE /api/user-games/:id` — remove from library
-  - `GET /api/user-games?userId=...` — read (public)
-  - `POST /api/follows` / `DELETE /api/follows/:followingId`
-  - `GET /api/follows?userId=...`
-  - CRUD for `/api/tags`
-  - Tag join writes via `/api/user-games/:id/tags`
-- Vercel env vars: `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`
+- `api/igdb-search.ts` — Twitch app token cached in module scope (refreshed on 401), IGDB v4 search, cover URL transform, Clerk auth required, CORS allowlist. Returns 503 with a clear message if Twitch creds aren't set.
+- `api/_lib/igdb.ts` — shared Twitch token cache + `searchIgdb()` + `fetchIgdbGame(id)`.
+- `api/user-games.ts` — `GET ?userId=&status=&sort=` (public read; defaults to caller's library), `POST` (add to caller's library, upserts games_cache).
+- `api/user-games/[id].ts` — `PATCH` (rating/status/notes/playedOn/playedAt — auth-scoped), `DELETE`.
+- `api/games/[igdbId].ts` — read game from cache; if missing, fetch from IGDB once, cache, then return.
+- Frontend: `src/lib/igdb/search.ts` wrapper, `useApi()` adds Clerk JWT.
+- Components: `StarRating` (5 stars, half-star, click-to-rate), `StatusBadge`, `GameCard`.
+- `AddGameModal` — debounced IGDB search → pick → status segment + half-star rating + notes → POSTs to `/api/user-games`.
+- Library page rewrite: status segment header (All / Backlog / Playing / Played / Dropped), sort dropdown (Recent / Rating / Name), pull-to-refresh, FAB to open AddGameModal, empty state with CTA.
+- GameDetail page at `/tabs/library/g/:igdbId` — hero (cover + meta), inline status segment + rating + notes editing (auto-saves on blur), summary, delete-with-confirm.
 
-## Phase 5 — Core screens ⬜
+Permissions are enforced in API handlers (`requireAuth()` from `api/_lib/auth.ts` using Clerk's `authenticateRequest` with bearer token). DB-level RLS is not used — that came with Supabase, which we swapped out.
 
-- Add Game modal (debounced IGDB search → status/rating/platform/notes/tags sheet)
-- Library page: All / Backlog / Playing / Played / Dropped segment, multi-tag chip filter, sort by rating / recent / alpha
-- Game Detail: cover, summary, your meta, friends-who-played list (followed users + their ratings)
+## Phase 5 — Discover + Friends + public profiles ⬜
+
 - Discover: activity feed (followed users' recent rates and status changes), top-rated leaderboard
-- Friends: search by username, Following / Followers tabs
-- Profile: self at `/tabs/profile`, others at `/u/:username`; top-rated games, recent activity, public tag-filtered lists, follow/unfollow
+- Friends: search by username, Following / Followers tabs, follow/unfollow
+- Public profile at `/u/:username`: top-rated games, recent activity, follow button
+- API: `POST/DELETE /api/follows`, `GET /api/follows?userId=...`, `GET /api/profile/by-username/:u`, search endpoint
+- Show "friends who played this" on GameDetail
 
 ## Phase 6 — Reusable components ⬜
 

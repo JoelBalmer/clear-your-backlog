@@ -2,7 +2,7 @@
 
 Personal game rating + social app. Track what you've played, rate it, share lists with friends. Mobile-first via Ionic, ships to web (Vercel) and later to iOS/Android (Capacitor).
 
-> **Status:** Phase 3 of 7 (auth complete). See [ROADMAP.md](./ROADMAP.md) for the full plan and current progress.
+> **Status:** Phase 4 of 7 (auth + library + game detail complete). See [ROADMAP.md](./ROADMAP.md) for the full plan and current progress.
 
 ---
 
@@ -66,27 +66,37 @@ npm run dev            # http://localhost:5173
 ## Project layout
 
 ```
-api/                    # Vercel serverless functions, one per route
-  _lib/                 # private (underscore prefix) — not exposed as routes
-    auth.ts             # Clerk JWT verification helper for API handlers
-  me.ts                 # GET  /api/me                 — current user's profile
-  profile.ts            # POST /api/profile            — claim/update username
+api/                    # Vercel serverless functions, one per route. Imports MUST use .js extensions on relative paths (Node ESM).
+  _lib/                 # private (underscore prefix) — not exposed as routes; bundled with siblings that import them
+    auth.ts             # Clerk JWT verification (createClerkClient + authenticateRequest)
+    db.ts               # Drizzle client (Neon HTTP driver)
+    schema.ts           # All Drizzle table definitions
+    igdb.ts             # Twitch token cache + IGDB v4 search/fetch helpers
+  me.ts                 # GET    /api/me                       — current user's profile
+  profile.ts            # POST   /api/profile                  — claim/update username
   profile/
-    check-username.ts   # GET  /api/profile/check-username?u=foo
+    check-username.ts   # GET    /api/profile/check-username?u=foo
+  user-games.ts         # GET    /api/user-games?status=&sort= — list (defaults to caller)
+                        # POST   /api/user-games               — add game (upserts games_cache)
+  user-games/
+    [id].ts             # PATCH  /api/user-games/:id           — rating/status/notes
+                        # DELETE /api/user-games/:id
+  games/
+    [igdbId].ts         # GET    /api/games/:igdbId            — cache, fallback to IGDB
+  igdb-search.ts        # GET    /api/igdb-search?q=…          — Twitch-cached IGDB search
 
 src/
-  components/           # Shared React components (RequireAuth, PlaceholderPage, …)
+  components/           # Shared React components (StarRating, GameCard, AddGameModal, RequireAuth, …)
   contexts/             # React contexts (filled in later phases)
   hooks/                # Custom hooks (filled in later phases)
   lib/
     api.ts              # useApi() — fetch wrapper that injects Clerk JWT
-    db/
-      client.ts         # Drizzle client (Neon HTTP driver)
-      schema.ts         # All table definitions + inferred types
-    igdb/               # IGDB client (Phase 4)
-  pages/                # One file per top-level route
+    igdb/
+      search.ts         # Frontend wrapper for /api/igdb-search
+  pages/                # One file per top-level route (Library, GameDetail, Profile, …)
   theme/                # Ionic CSS variables + app-level styles
-  types/                # Type augmentations
+  types/
+    models.ts           # Plain TS shapes for API responses (decoupled from Drizzle)
 
 drizzle/                # Generated SQL migrations (committed)
 .github/workflows/      # CI
@@ -114,9 +124,26 @@ All env vars are managed in Vercel and pulled locally via `vercel env pull`. Nam
 | `DATABASE_URL_UNPOOLED`              | Neon integration   | `drizzle-kit migrate` (direct connection)  |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`  | Clerk integration  | Frontend (aliased to `VITE_CLERK_PUBLISHABLE_KEY` at build time in `vite.config.ts`) |
 | `CLERK_SECRET_KEY`                   | Clerk integration  | API routes (verify JWT)                    |
-| `TWITCH_CLIENT_ID` / `_SECRET`       | Manual (Phase 4)   | `/api/igdb-search` (server-only)           |
+| `TWITCH_CLIENT_ID` / `_SECRET`       | **Manual** (see below) | `/api/igdb-search` (server-only) — required for game search |
 
 ---
+
+### Setting up Twitch / IGDB credentials
+
+IGDB is free but requires a Twitch developer app (Twitch owns IGDB). Once per project:
+
+1. Sign in at https://dev.twitch.tv/console
+2. Click **Register Your Application**: name it anything (e.g. `clear-your-backlog`), OAuth Redirect URLs `http://localhost`, Category **Application Integration**
+3. Copy the **Client ID** and click **New Secret** to get the **Client Secret**
+4. Add both to Vercel:
+   ```bash
+   vercel env add TWITCH_CLIENT_ID
+   vercel env add TWITCH_CLIENT_SECRET
+   # paste each value when prompted; pick "all environments"
+   ```
+5. Redeploy: `vercel --prod`
+
+Until the creds are added, `/api/igdb-search` returns HTTP 503 with a clear message. The rest of the app works (you just can't add new games via search).
 
 ## Mobile builds (later)
 

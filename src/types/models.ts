@@ -51,3 +51,19 @@ export type Follow = {
   followingId: string;
   createdAt: string;
 };
+
+// Result shape for /api/igdb-search
+export type IgdbResult = {
+  igdbId: number;
+  name: string;
+  coverUrl: string | null;
+  platforms: string[];
+  releaseYear: number | null;
+  summary: string | null;
+};
+
+// Result shape for /api/user-games (joined with games_cache)
+export type UserGameWithGame = {
+  userGame: UserGame;
+  game: Game;
+};

@@ -18,12 +18,14 @@ import Library from './Library';
 import Discover from './Discover';
 import Friends from './Friends';
 import Profile from './Profile';
+import GameDetail from './GameDetail';
 
 const Tabs: React.FC = () => (
   <RequireOnboarded>
     <IonTabs>
       <IonRouterOutlet>
         <Route exact path="/tabs/library" component={Library} />
+        <Route exact path="/tabs/library/g/:igdbId" component={GameDetail} />
         <Route exact path="/tabs/discover" component={Discover} />
         <Route exact path="/tabs/friends" component={Friends} />
         <Route exact path="/tabs/profile" component={Profile} />
