@@ -12,8 +12,6 @@ import {
   IonList,
   IonNote,
   IonPage,
-  IonSegment,
-  IonSegmentButton,
   IonSpinner,
   IonText,
   IonTextarea,
@@ -25,21 +23,15 @@ import { useHistory, useParams } from 'react-router-dom';
 import { ApiError, useApi } from '../lib/api';
 import StarRating from '../components/StarRating';
 import StatusBadge from '../components/StatusBadge';
+import StatusChips from '../components/StatusChips';
 import TagPicker from '../components/TagPicker';
 import { tap as hapticTap, success as hapticSuccess, warning as hapticWarning } from '../lib/haptics';
-import type { FriendPlayedItem, Game, GameStatus, UserGame, UserGameWithGame } from '../types/models';
+import type { FriendPlayedItem, Game, UserGame, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
 type GameResp = { game: Game };
 type UpdateResp = { userGame: UserGame };
 type FriendsResp = { items: FriendPlayedItem[] };
-
-const STATUSES: { value: GameStatus; label: string }[] = [
-  { value: 'backlog', label: 'Backlog' },
-  { value: 'playing', label: 'Playing' },
-  { value: 'played', label: 'Played' },
-  { value: 'dropped', label: 'Dropped' },
-];
 
 const GameDetail: React.FC = () => {
   const { igdbId } = useParams<{ igdbId: string }>();
@@ -230,31 +222,21 @@ const GameDetail: React.FC = () => {
           <IonList inset>
             <IonItem lines="none">
               <IonLabel>
-                <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>
+                <h3 className="section-h">
                   Status {savingField === 'status' && <IonSpinner name="dots" style={{ height: 12 }} />}
                 </h3>
-                <IonSegment
+                <StatusChips
                   value={userGame.status}
-                  onIonChange={(e) =>
-                    patch('status', { status: (e.detail.value as GameStatus) ?? 'backlog' })
-                  }
-                >
-                  {STATUSES.map((s) => (
-                    <IonSegmentButton key={s.value} value={s.value}>
-                      <IonLabel>{s.label}</IonLabel>
-                    </IonSegmentButton>
-                  ))}
-                </IonSegment>
+                  onChange={(s) => patch('status', { status: s })}
+                />
               </IonLabel>
             </IonItem>
             <IonItem lines="none">
               <IonLabel>
-                <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>
+                <h3 className="section-h">
                   Your rating{' '}
                   {ratingNum != null && (
-                    <span style={{ color: 'var(--ion-color-medium)', fontWeight: 400 }}>
-                      · {ratingNum.toFixed(1)}/10
-                    </span>
+                    <span className="section-h__suffix">· {ratingNum.toFixed(1)}/10</span>
                   )}
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -269,21 +251,22 @@ const GameDetail: React.FC = () => {
             </IonItem>
             <IonItem>
               <IonTextarea
-                label="Notes"
+                label="Review (public)"
                 labelPlacement="stacked"
-                placeholder="Optional"
+                placeholder="What did you think? Visible on your profile."
                 value={notesDraft}
                 onIonInput={(e) => setNotesDraft(String(e.detail.value ?? ''))}
                 onIonBlur={() => {
                   if (notesDraft !== (userGame.notes ?? '')) patch('notes', { notes: notesDraft });
                 }}
-                rows={3}
-                maxlength={1000}
+                rows={4}
+                maxlength={2000}
+                autoGrow
               />
             </IonItem>
             <IonItem lines="none">
               <IonLabel>
-                <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>Tags</h3>
+                <h3 className="section-h">Tags</h3>
                 <TagPicker selectedIds={tagIds} onToggle={toggleTag} />
               </IonLabel>
             </IonItem>
@@ -298,7 +281,7 @@ const GameDetail: React.FC = () => {
 
         {friends.length > 0 && (
           <>
-            <h3 style={{ padding: '8px 16px 4px', margin: 0, fontSize: 13, fontWeight: 600, letterSpacing: 0.5, color: 'var(--ion-color-medium)', textTransform: 'uppercase' }}>
+            <h3 className="block-h">
               Friends who played
             </h3>
             <IonList lines="full">
@@ -317,7 +300,7 @@ const GameDetail: React.FC = () => {
                         width: 36,
                         height: 36,
                         borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+                        background: 'linear-gradient(135deg, var(--brand-amber, #f59e0b), var(--brand-coral, #fb7185))',
                         color: 'white',
                         display: 'grid',
                         placeItems: 'center',
@@ -327,14 +310,17 @@ const GameDetail: React.FC = () => {
                     >
                       {(f.profile.displayName ?? f.profile.username).slice(0, 1).toUpperCase()}
                     </div>
-                    <IonLabel>
-                      <h3 style={{ fontWeight: 600, margin: 0 }}>
+                    <IonLabel className="friend-played">
+                      <h3 className="friend-played__name">
                         {f.profile.displayName || f.profile.username}
                       </h3>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
                         <StatusBadge status={f.userGame.status} size="sm" />
                         {r !== null && <StarRating value={r} size={12} />}
                       </div>
+                      {f.userGame.notes && (
+                        <p className="friend-played__review">"{f.userGame.notes}"</p>
+                      )}
                     </IonLabel>
                   </IonItem>
                 );
@@ -345,7 +331,7 @@ const GameDetail: React.FC = () => {
 
         {game.summary && (
           <>
-            <h3 style={{ padding: '8px 16px 4px', margin: 0, fontSize: 13, fontWeight: 600, letterSpacing: 0.5, color: 'var(--ion-color-medium)', textTransform: 'uppercase' }}>About</h3>
+            <h3 className="block-h">About</h3>
             <p className="detail-summary">{game.summary}</p>
           </>
         )}

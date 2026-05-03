@@ -201,26 +201,26 @@
 }
 
 .rail {
-  padding: 8px 0 16px;
+  padding: 14px 0 24px;
 }
 .rail__header {
-  padding: 0 16px 8px;
+  padding: 0 20px 12px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 .rail__title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   color: var(--ion-color-medium);
 }
 .rail__scroll {
   display: flex;
-  gap: 12px;
-  padding: 0 16px;
+  gap: 14px;
+  padding: 4px 20px 8px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -231,9 +231,9 @@
 }
 .rail__card {
   flex: 0 0 auto;
-  width: 110px;
-  height: 154px;
-  border-radius: 10px;
+  width: 124px;
+  height: 174px;
+  border-radius: 12px;
   overflow: hidden;
   position: relative;
   background: var(--ion-color-light, #f3f4f6);
@@ -241,11 +241,12 @@
   padding: 0;
   cursor: pointer;
   scroll-snap-align: start;
-  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.15s ease;
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .rail__card:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.5);
 }
 .rail__card img {
   width: 100%;
@@ -266,8 +267,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 24px 8px 6px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  padding: 28px 10px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.88));
   color: white;
   display: flex;
   flex-direction: column;
@@ -276,9 +277,9 @@
   pointer-events: none;
 }
 .rail__card-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -286,8 +287,53 @@
 }
 .rail__card-year {
   font-size: 10px;
-  opacity: 0.8;
-  margin-top: 2px;
+  opacity: 0.75;
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+}
+
+/* Standard section heading used in modals + detail panels */
+.section-h {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin: 0 0 10px !important;
+  letter-spacing: -0.005em;
+  color: var(--brand-text);
+}
+.section-h__suffix {
+  color: var(--ion-color-medium);
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+/* Page-level section heading: small, uppercase, used between content blocks */
+.block-h {
+  margin: 12px 0 6px !important;
+  padding: 0 16px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+  color: var(--ion-color-medium) !important;
+}
+
+.friend-played__name {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+.friend-played__review {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--brand-text);
+  margin: 8px 0 0;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
 }
 .rail__error,
 .rail__empty {

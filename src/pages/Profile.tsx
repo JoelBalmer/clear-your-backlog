@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   IonAlert,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
@@ -34,6 +35,7 @@ import { useApi, ApiError } from '../lib/api';
 import { useMe } from '../contexts/MeContext';
 import { useTheme, type ThemeChoice } from '../contexts/ThemeContext';
 import ManageTagsModal from '../components/ManageTagsModal';
+import ThemeButton from '../components/ThemeButton';
 import { warning as hapticWarning, error as hapticError } from '../lib/haptics';
 
 const APP_VERSION = '1.0.0';
@@ -96,6 +98,9 @@ const Profile: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>Profile</IonTitle>
+          <IonButtons slot="end">
+            <ThemeButton />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
@@ -157,17 +162,21 @@ const Profile: React.FC = () => {
               <h3>Theme</h3>
               <IonSegment
                 value={choice}
-                onIonChange={(e) => setChoice((e.detail.value as ThemeChoice) ?? 'system')}
+                onIonChange={(e) => setChoice((e.detail.value as ThemeChoice) ?? 'dark')}
                 style={{ marginTop: 8 }}
+                scrollable
               >
-                <IonSegmentButton value="light">
-                  <IonLabel>Light</IonLabel>
-                </IonSegmentButton>
                 <IonSegmentButton value="dark">
                   <IonLabel>Dark</IonLabel>
                 </IonSegmentButton>
+                <IonSegmentButton value="light">
+                  <IonLabel>Light</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="synthwave">
+                  <IonLabel>Synth</IonLabel>
+                </IonSegmentButton>
                 <IonSegmentButton value="system">
-                  <IonLabel>System</IonLabel>
+                  <IonLabel>Auto</IonLabel>
                 </IonSegmentButton>
               </IonSegment>
             </IonLabel>

@@ -11,8 +11,6 @@ import {
   IonList,
   IonModal,
   IonNote,
-  IonSegment,
-  IonSegmentButton,
   IonSpinner,
   IonText,
   IonTextarea,
@@ -21,6 +19,7 @@ import {
 } from '@ionic/react';
 import { closeOutline, gameControllerOutline, searchOutline } from 'ionicons/icons';
 import StarRating from './StarRating';
+import StatusChips from './StatusChips';
 import TagPicker from './TagPicker';
 import { ApiError, useApi } from '../lib/api';
 import { searchIgdb } from '../lib/igdb/search';
@@ -33,12 +32,6 @@ type Props = {
   initialGame?: IgdbResult | null;
 };
 
-const STATUSES: { value: GameStatus; label: string }[] = [
-  { value: 'backlog', label: 'Backlog' },
-  { value: 'playing', label: 'Playing' },
-  { value: 'played', label: 'Played' },
-  { value: 'dropped', label: 'Dropped' },
-];
 
 const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
   const api = useApi();
@@ -275,23 +268,14 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
             <IonList inset>
               <IonItem lines="none">
                 <IonLabel>
-                  <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>Status</h3>
-                  <IonSegment
-                    value={status}
-                    onIonChange={(e) => setStatus((e.detail.value as GameStatus) ?? 'backlog')}
-                  >
-                    {STATUSES.map((s) => (
-                      <IonSegmentButton key={s.value} value={s.value}>
-                        <IonLabel>{s.label}</IonLabel>
-                      </IonSegmentButton>
-                    ))}
-                  </IonSegment>
+                  <h3 className="section-h">Status</h3>
+                  <StatusChips value={status} onChange={setStatus} />
                 </IonLabel>
               </IonItem>
               <IonItem lines="none">
                 <IonLabel>
-                  <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>
-                    Rating {rating != null && <span style={{ color: 'var(--ion-color-medium)', fontWeight: 400 }}>· {rating.toFixed(1)}/10</span>}
+                  <h3 className="section-h">
+                    Rating {rating != null && <span className="section-h__suffix">· {rating.toFixed(1)}/10</span>}
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <StarRating value={rating} size={28} onChange={setRating} />
@@ -305,18 +289,19 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
               </IonItem>
               <IonItem>
                 <IonTextarea
-                  label="Notes"
+                  label="Review (public)"
                   labelPlacement="stacked"
-                  placeholder="Optional"
+                  placeholder="What did you think? Visible on your profile."
                   value={notes}
                   onIonInput={(e) => setNotes(String(e.detail.value ?? ''))}
-                  rows={3}
-                  maxlength={1000}
+                  rows={4}
+                  maxlength={2000}
+                  autoGrow
                 />
               </IonItem>
               <IonItem lines="none">
                 <IonLabel>
-                  <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>Tags</h3>
+                  <h3 className="section-h">Tags</h3>
                   <TagPicker
                     selectedIds={tagIds}
                     onToggle={(id) =>

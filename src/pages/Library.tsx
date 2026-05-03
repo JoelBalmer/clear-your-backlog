@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   IonButton,
+  IonButtons,
   IonContent,
   IonFab,
   IonFabButton,
@@ -21,6 +22,7 @@ import GameCard from '../components/GameCard';
 import AddGameModal from '../components/AddGameModal';
 import LibraryFilterSheet, { type SortValue } from '../components/LibraryFilterSheet';
 import GameCardSkeleton from '../components/Skeleton/GameCardSkeleton';
+import ThemeButton from '../components/ThemeButton';
 import type { GameStatus, Tag, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
@@ -69,6 +71,9 @@ const Library: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>Library</IonTitle>
+          <IonButtons slot="end">
+            <ThemeButton />
+          </IonButtons>
         </IonToolbar>
         <IonToolbar>
           <div className="library-toolbar">

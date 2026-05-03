@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
@@ -21,6 +22,7 @@ import { peopleOutline, searchOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
 import { useMe } from '../contexts/MeContext';
 import UserListItem from '../components/UserListItem';
+import ThemeButton from '../components/ThemeButton';
 import { tap as hapticTap } from '../lib/haptics';
 import type { FollowItem, Profile } from '../types/models';
 
@@ -149,6 +151,9 @@ const Friends: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>Friends</IonTitle>
+          <IonButtons slot="end">
+            <ThemeButton />
+          </IonButtons>
         </IonToolbar>
         <IonToolbar>
           <IonSegment value={tab} onIonChange={(e) => setTab((e.detail.value as Tab) ?? 'search')}>

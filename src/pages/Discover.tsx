@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
@@ -23,6 +24,7 @@ import GameRail from '../components/GameRail';
 import AddGameModal from '../components/AddGameModal';
 import StatusBadge from '../components/StatusBadge';
 import StarRating from '../components/StarRating';
+import ThemeButton from '../components/ThemeButton';
 import type { FeedItem, IgdbResult } from '../types/models';
 
 type FeedResp = { items: FeedItem[] };
@@ -117,6 +119,9 @@ const Discover: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>Discover</IonTitle>
+          <IonButtons slot="end">
+            <ThemeButton />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>

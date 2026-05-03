@@ -34,6 +34,47 @@
   --brand-shadow-lg: 0 24px 64px -24px rgba(0, 0, 0, 0.6);
 }
 
+/* Synthwave — dark base with magenta + cyan accents. Toggled via .theme-synthwave on <html>. */
+.theme-synthwave,
+.theme-synthwave :root {
+  --brand-bg: #1a0033;
+  --brand-surface: #2a0a4a;
+  --brand-text: #f9f5ff;
+  --brand-text-muted: #c4b5fd;
+
+  --brand-amber: #ec4899;
+  --brand-amber-soft: #fbcfe8;
+  --brand-coral: #06b6d4;
+  --brand-coral-soft: #cffafe;
+  --brand-mint: #a78bfa;
+  --brand-mint-soft: #ddd6fe;
+  --brand-violet: #f472b6;
+  --brand-violet-soft: #fbcfe8;
+  --brand-fog: #c4b5fd;
+
+  --brand-shadow-sm: 0 2px 8px -2px rgba(236, 72, 153, 0.3);
+  --brand-shadow-md: 0 8px 24px -10px rgba(236, 72, 153, 0.4);
+  --brand-shadow-lg: 0 24px 64px -24px rgba(236, 72, 153, 0.5);
+}
+.theme-synthwave {
+  --ion-color-primary: #ec4899;
+  --ion-color-primary-rgb: 236, 72, 153;
+  --ion-color-primary-shade: #d040a0;
+  --ion-color-primary-tint: #ee5aa3;
+  --ion-color-secondary: #06b6d4;
+  --ion-color-secondary-rgb: 6, 182, 212;
+  --ion-color-success: #a78bfa;
+  --ion-color-success-rgb: 167, 139, 250;
+  --ion-background-color: #1a0033;
+  --ion-background-color-rgb: 26, 0, 51;
+  --ion-text-color: #f9f5ff;
+  --ion-text-color-rgb: 249, 245, 255;
+  --ion-toolbar-background: #2a0a4a;
+  --ion-tab-bar-background: #2a0a4a;
+  --ion-item-background: #2a0a4a;
+  --ion-card-background: #3a1560;
+}
+
 /* Wordmark uses the pixel display font; everything else uses system sans. */
 .brand-wordmark {
   font-family: 'Press Start 2P', 'Courier New', monospace;
