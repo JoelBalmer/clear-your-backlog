@@ -12,7 +12,11 @@
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "dotenv -e .env.development.local -- drizzle-kit migrate",
+    "db:push": "dotenv -e .env.development.local -- drizzle-kit push",
+    "db:studio": "dotenv -e .env.development.local -- drizzle-kit studio"
   },
   "dependencies": {
     "@capacitor/app": "8.1.0",
@@ -22,8 +26,10 @@
     "@capacitor/status-bar": "8.0.2",
     "@ionic/react": "^8.5.0",
     "@ionic/react-router": "^8.5.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
+    "drizzle-orm": "^0.45.2",
     "ionicons": "^7.4.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -41,6 +47,8 @@
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitejs/plugin-react": "^4.0.1",
     "cypress": "^13.5.0",
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9.20.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^5.1.0",
