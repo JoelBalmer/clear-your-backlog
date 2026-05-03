@@ -1,0 +1,7 @@
+{
+  "name": "Clear Your Backlog",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
