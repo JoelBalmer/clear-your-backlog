@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireAuth, setCors } from './_lib/auth';
-import { searchIgdb } from './_lib/igdb';
+import { requireAuth, setCors } from './_lib/auth.js';
+import { searchIgdb } from './_lib/igdb.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
