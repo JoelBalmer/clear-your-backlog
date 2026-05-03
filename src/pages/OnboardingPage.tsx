@@ -77,60 +77,77 @@ const OnboardingPage: React.FC = () => {
           <IonTitle>Welcome</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen className="ion-padding">
-        <h2 style={{ marginTop: 8, fontWeight: 700 }}>Pick a username</h2>
-        <IonText color="medium">
-          <p style={{ marginTop: 0 }}>
-            This is how friends will find you. You can change your display name anytime.
-          </p>
-        </IonText>
+      <IonContent fullscreen>
+        <div className="page-narrow">
+          <h2 style={{ marginTop: 8, fontWeight: 700 }}>Pick a username</h2>
+          <IonText color="medium">
+            <p style={{ marginTop: 0 }}>
+              This is how friends will find you. You can change your display name anytime.
+            </p>
+          </IonText>
 
-        <form onSubmit={onSubmit}>
-          <IonList inset>
-            <IonItem>
-              <IonInput
-                label="Username"
-                labelPlacement="stacked"
-                placeholder="e.g. arcade_kira"
-                value={username}
-                onIonInput={(e) => setUsername(String(e.detail.value ?? ''))}
-                autocapitalize="off"
-                autocorrect="off"
-                spellcheck={false}
-                clearInput
-              />
-            </IonItem>
-            <IonItem>
-              <IonInput
-                label="Display name"
-                labelPlacement="stacked"
-                placeholder="Optional"
-                value={displayName}
-                onIonInput={(e) => setDisplayName(String(e.detail.value ?? ''))}
-              />
-            </IonItem>
-          </IonList>
+          <form onSubmit={onSubmit}>
+            <IonList inset>
+              <IonItem>
+                <IonInput
+                  label="Username"
+                  labelPlacement="stacked"
+                  placeholder="e.g. arcade_kira"
+                  value={username}
+                  onIonInput={(e) =>
+                    setUsername(
+                      String(e.detail.value ?? '')
+                        .toLowerCase()
+                        .replace(/[^a-z0-9_]/g, ''),
+                    )
+                  }
+                  maxlength={20}
+                  autocapitalize="off"
+                  autocorrect="off"
+                  spellcheck={false}
+                  clearInput
+                />
+              </IonItem>
+              <IonItem>
+                <IonInput
+                  label="Display name"
+                  labelPlacement="stacked"
+                  placeholder="Optional"
+                  value={displayName}
+                  onIonInput={(e) => setDisplayName(String(e.detail.value ?? ''))}
+                />
+              </IonItem>
+            </IonList>
 
-          <IonNote color={check === 'taken' || check === 'invalid' ? 'danger' : 'medium'} style={{ display: 'block', padding: '0 24px' }}>
-            {check === 'checking' && <><IonSpinner name="dots" style={{ height: 12 }} /> Checking…</>}
-            {check === 'ok' && '✓ Available'}
-            {check === 'taken' && 'Already taken'}
-            {check === 'invalid' && '3-20 characters: lowercase letters, numbers, underscore'}
-            {check === 'idle' && username === '' && '3-20 characters: lowercase letters, numbers, underscore'}
-          </IonNote>
+            <IonNote
+              color={check === 'taken' || check === 'invalid' ? 'danger' : 'medium'}
+              style={{ display: 'block', padding: '8px 24px 0' }}
+            >
+              {check === 'checking' && (
+                <>
+                  <IonSpinner name="dots" style={{ height: 12, verticalAlign: 'middle' }} /> Checking…
+                </>
+              )}
+              {check === 'ok' && '✓ Available'}
+              {check === 'taken' && 'Already taken'}
+              {check === 'invalid' && '3-20 characters: lowercase letters, numbers, underscore'}
+              {check === 'idle' &&
+                '3-20 characters: lowercase letters, numbers, underscore'}
+            </IonNote>
 
-          {error && (
-            <IonText color="danger">
-              <p style={{ padding: '0 24px' }}>{error}</p>
-            </IonText>
-          )}
+            {error && (
+              <IonText color="danger">
+                <p style={{ padding: '0 24px' }}>{error}</p>
+              </IonText>
+            )}
 
-          <div style={{ padding: '24px 16px 0' }}>
-            <IonButton expand="block" type="submit" disabled={submitting || check !== 'ok'}>
-              {submitting ? <IonSpinner name="dots" /> : 'Continue'}
-            </IonButton>
-          </div>
-        </form>
+            <div style={{ padding: '24px 16px 0' }}>
+              <IonButton expand="block" type="submit" disabled={submitting || check !== 'ok'}>
+                {submitting ? <IonSpinner name="dots" /> : 'Continue'}
+              </IonButton>
+            </div>
+          </form>
+        </div>
       </IonContent>
     </IonPage>
   );
