@@ -29,6 +29,7 @@ import type { GameStatus, IgdbResult } from '../types/models';
 type Props = {
   isOpen: boolean;
   onDismiss: (added: boolean) => void;
+  initialGame?: IgdbResult | null;
 };
 
 const STATUSES: { value: GameStatus; label: string }[] = [
@@ -38,13 +39,18 @@ const STATUSES: { value: GameStatus; label: string }[] = [
   { value: 'dropped', label: 'Dropped' },
 ];
 
-const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
+const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
   const api = useApi();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<IgdbResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [picked, setPicked] = useState<IgdbResult | null>(null);
+  const [picked, setPicked] = useState<IgdbResult | null>(initialGame ?? null);
+
+  // Sync with initialGame when modal opens with a different pre-selected game.
+  useEffect(() => {
+    if (isOpen && initialGame) setPicked(initialGame);
+  }, [isOpen, initialGame]);
 
   const [status, setStatus] = useState<GameStatus>('backlog');
   const [rating, setRating] = useState<number | null>(null);

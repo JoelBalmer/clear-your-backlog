@@ -17,6 +17,7 @@ Last updated: 2026-05-03
 | 5     | Discover + Friends + public profiles   | ✅ Complete     |
 | 6     | Tags + multi-tag filter + code-split   | ✅ Complete     |
 | 7     | Full README + Capacitor mobile docs    | ✅ Complete     |
+| 8     | IGDB editorial rails on Discover       | ✅ Complete     |
 
 ---
 
@@ -103,9 +104,20 @@ Permissions are enforced in API handlers (`requireAuth()` from `api/_lib/auth.ts
 
 ---
 
+## Phase 8 — IGDB editorial rails on Discover ✅
+
+Added after the 7-phase plan to address the cold-start problem (zero friends = empty Discover feed).
+
+- `api/_lib/igdb.ts`: `fetchRail(rail, limit)` builds three IGDB v4 queries — `popular` (released last 90 days, sort by `total_rating_count`), `upcoming` (future release, sort by `hypes`), `top` (all-time top rated with significant rating volume).
+- `api/igdb-search.ts` extended to handle `?rail=popular|upcoming|top` — same function, no new Vercel slot used (we're at the Hobby 12 cap).
+- `src/lib/igdb/search.ts`: `fetchRail()` frontend wrapper.
+- `GameRail` component: horizontal scrolling cover-art carousel with skeleton loaders.
+- `AddGameModal` accepts an optional `initialGame` prop and jumps straight to the add sheet when supplied.
+- Discover page rewrite: three rails ("Popular this season", "Coming soon", "All-time greats") render above the friends activity feed. Tapping a tile opens AddGameModal pre-selected so the user can add it in 2 taps. Gracefully shows a "Twitch credentials not configured" notice if `/api/igdb-search` returns 503.
+
 ## Done
 
-All 7 phases complete. Future improvements (out of the original 7-phase scope):
+All 8 phases complete. Future improvements (out of original scope):
 
 - Clerk webhook for `user.deleted` to clean up orphan profile rows
 - Profile editing UI (display name, bio, avatar upload)

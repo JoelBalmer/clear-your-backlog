@@ -18,11 +18,19 @@ import {
 } from '@ionic/react';
 import { compassOutline, gameControllerOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
+import { fetchRail } from '../lib/igdb/search';
+import GameRail from '../components/GameRail';
+import AddGameModal from '../components/AddGameModal';
 import StatusBadge from '../components/StatusBadge';
 import StarRating from '../components/StarRating';
-import type { FeedItem } from '../types/models';
+import type { FeedItem, IgdbResult } from '../types/models';
 
 type FeedResp = { items: FeedItem[] };
+
+type RailState = {
+  items: IgdbResult[] | null;
+  error: string | null;
+};
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -42,26 +50,67 @@ function timeAgo(iso: string): string {
   return `${Math.floor(d / 365)}y`;
 }
 
+const RAILS = [
+  { rail: 'popular' as const, title: 'Popular this season' },
+  { rail: 'upcoming' as const, title: 'Coming soon' },
+  { rail: 'top' as const, title: 'All-time greats' },
+];
+
 const Discover: React.FC = () => {
   const api = useApi();
-  const [items, setItems] = useState<FeedItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [feed, setFeed] = useState<FeedItem[] | null>(null);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [rails, setRails] = useState<Record<string, RailState>>({
+    popular: { items: null, error: null },
+    upcoming: { items: null, error: null },
+    top: { items: null, error: null },
+  });
+  const [igdbUnavailable, setIgdbUnavailable] = useState(false);
+  const [pickedGame, setPickedGame] = useState<IgdbResult | null>(null);
 
-  const load = useCallback(async () => {
+  const loadFeed = useCallback(async () => {
     try {
-      setError(null);
+      setFeedError(null);
       const r = await api<FeedResp>('/api/feed');
-      setItems(r.items);
+      setFeed(r.items);
     } catch (err) {
-      if (err instanceof ApiError) setError(`Failed (HTTP ${err.status})`);
-      else setError('Network error');
-      setItems([]);
+      if (err instanceof ApiError) setFeedError(`Failed (HTTP ${err.status})`);
+      else setFeedError('Network error');
+      setFeed([]);
     }
   }, [api]);
 
+  const loadRails = useCallback(async () => {
+    setIgdbUnavailable(false);
+    await Promise.all(
+      RAILS.map(async ({ rail }) => {
+        try {
+          const items = await fetchRail(api, rail);
+          setRails((prev) => ({ ...prev, [rail]: { items, error: null } }));
+        } catch (err) {
+          let detail = 'Could not load';
+          if (err instanceof ApiError) {
+            if (err.status === 503) {
+              setIgdbUnavailable(true);
+              detail = 'IGDB credentials not configured';
+            } else {
+              detail = `HTTP ${err.status}`;
+            }
+          }
+          setRails((prev) => ({ ...prev, [rail]: { items: [], error: detail } }));
+        }
+      }),
+    );
+  }, [api]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadFeed();
+    loadRails();
+  }, [loadFeed, loadRails]);
+
+  const reload = async () => {
+    await Promise.all([loadFeed(), loadRails()]);
+  };
 
   return (
     <IonPage>
@@ -71,40 +120,76 @@ const Discover: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={(e) => load().finally(() => e.detail.complete())}>
+        <IonRefresher slot="fixed" onIonRefresh={(e) => reload().finally(() => e.detail.complete())}>
           <IonRefresherContent />
         </IonRefresher>
 
-        {error && (
+        {igdbUnavailable && (
+          <div style={{ padding: '12px 16px 0' }}>
+            <IonText color="medium">
+              <p style={{ fontSize: 13, margin: 0 }}>
+                Editorial rails need Twitch/IGDB credentials. See README → "Setting up Twitch / IGDB
+                credentials".
+              </p>
+            </IonText>
+          </div>
+        )}
+
+        {!igdbUnavailable &&
+          RAILS.map(({ rail, title }) => (
+            <GameRail
+              key={rail}
+              title={title}
+              items={rails[rail].items}
+              error={rails[rail].error}
+              onPick={(g) => setPickedGame(g)}
+            />
+          ))}
+
+        <h3
+          style={{
+            padding: '16px 16px 4px',
+            margin: 0,
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: 0.5,
+            textTransform: 'uppercase',
+            color: 'var(--ion-color-medium)',
+          }}
+        >
+          Friends activity
+        </h3>
+
+        {feedError && (
           <IonText color="danger">
-            <p style={{ padding: '0 16px' }}>{error}</p>
+            <p style={{ padding: '0 16px' }}>{feedError}</p>
           </IonText>
         )}
 
-        {items === null && !error && (
-          <div style={{ display: 'grid', placeItems: 'center', padding: 48 }}>
+        {feed === null && !feedError && (
+          <div style={{ display: 'grid', placeItems: 'center', padding: 32 }}>
             <IonSpinner name="crescent" />
           </div>
         )}
 
-        {items && items.length === 0 && !error && (
-          <div className="empty-state">
-            <div className="empty-state__icon">
+        {feed && feed.length === 0 && !feedError && (
+          <div className="empty-state" style={{ minHeight: 'auto', padding: '32px 32px 48px' }}>
+            <div className="empty-state__icon" style={{ width: 72, height: 72 }}>
               <IonIcon icon={compassOutline} />
             </div>
-            <h2>Your feed is empty</h2>
+            <h2 style={{ fontSize: 18 }}>No friend activity yet</h2>
             <IonNote color="medium">
-              <p>Follow people from the Friends tab to see their game activity here.</p>
+              <p>Follow people from the Friends tab to see what they're playing.</p>
             </IonNote>
-            <IonButton routerLink="/tabs/friends" style={{ marginTop: 16 }}>
+            <IonButton routerLink="/tabs/friends" style={{ marginTop: 16 }} size="small">
               Find friends
             </IonButton>
           </div>
         )}
 
-        {items && items.length > 0 && (
+        {feed && feed.length > 0 && (
           <IonList lines="full">
-            {items.map((it) => {
+            {feed.map((it) => {
               const rating = it.userGame.rating != null ? Number(it.userGame.rating) : null;
               return (
                 <IonItem
@@ -141,6 +226,12 @@ const Discover: React.FC = () => {
             })}
           </IonList>
         )}
+
+        <AddGameModal
+          isOpen={!!pickedGame}
+          initialGame={pickedGame}
+          onDismiss={() => setPickedGame(null)}
+        />
       </IonContent>
     </IonPage>
   );

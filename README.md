@@ -101,6 +101,7 @@ api/                    # Vercel serverless functions, one per route.
     [igdbId].ts         # GET    /api/games/:igdbId            — cache, fallback to IGDB
   game-friends.ts       # GET    /api/game-friends?igdbId=     — followees who own this game
   igdb-search.ts        # GET    /api/igdb-search?q=…          — Twitch-cached IGDB search
+                        # GET    /api/igdb-search?rail=popular|upcoming|top  — editorial rails
   follows.ts            # GET    /api/follows?userId=&role=    — followers OR following list
                         # POST   /api/follows                  — follow
                         # DELETE /api/follows?followingId=     — unfollow

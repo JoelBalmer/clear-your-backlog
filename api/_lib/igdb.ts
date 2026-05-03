@@ -93,3 +93,33 @@ export async function fetchIgdbGame(igdbId: number): Promise<IgdbGame | null> {
   if (raw.length === 0) return null;
   return normalize(raw[0]);
 }
+
+export type Rail = 'popular' | 'upcoming' | 'top';
+
+export async function fetchRail(rail: Rail, limit = 20): Promise<IgdbGame[]> {
+  const safeLimit = Math.min(50, Math.max(1, limit));
+  const fields =
+    'fields id,name,cover.image_id,platforms.name,first_release_date,summary,total_rating,total_rating_count,hypes';
+  const nowSec = Math.floor(Date.now() / 1000);
+  const ninetyDaysAgo = nowSec - 60 * 60 * 24 * 90;
+
+  let where: string;
+  let sort: string;
+  if (rail === 'popular') {
+    // Released in the last 90 days, well-rated, has a cover.
+    where = `where first_release_date >= ${ninetyDaysAgo} & first_release_date <= ${nowSec} & cover != null & total_rating_count > 5`;
+    sort = 'sort total_rating_count desc';
+  } else if (rail === 'upcoming') {
+    // Future release, has hype, has a cover.
+    where = `where first_release_date > ${nowSec} & cover != null & hypes > 0`;
+    sort = 'sort hypes desc';
+  } else {
+    // All-time top-rated with significant rating volume.
+    where = `where total_rating_count > 500 & cover != null`;
+    sort = 'sort total_rating desc';
+  }
+
+  const body = `${fields}; ${where}; ${sort}; limit ${safeLimit};`;
+  const raw = await igdbCall(body);
+  return raw.map(normalize);
+}
