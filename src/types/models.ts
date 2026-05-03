@@ -62,10 +62,11 @@ export type IgdbResult = {
   summary: string | null;
 };
 
-// Result shape for /api/user-games (joined with games_cache)
+// Result shape for /api/user-games (joined with games_cache, includes tag IDs)
 export type UserGameWithGame = {
   userGame: UserGame;
   game: Game;
+  tagIds?: string[];
 };
 
 // Result shape for /api/feed

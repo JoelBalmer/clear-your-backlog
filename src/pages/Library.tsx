@@ -26,12 +26,14 @@ import { add, libraryOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
 import GameCard from '../components/GameCard';
 import AddGameModal from '../components/AddGameModal';
-import type { GameStatus, UserGameWithGame } from '../types/models';
+import TagChip from '../components/TagChip';
+import type { GameStatus, Tag, UserGameWithGame } from '../types/models';
 
 type SegValue = 'all' | GameStatus;
 type SortValue = 'recent' | 'rating' | 'name';
 
 type ListResp = { items: UserGameWithGame[] };
+type TagsResp = { items: Tag[] };
 
 const SEGMENTS: { value: SegValue; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -48,12 +50,15 @@ const Library: React.FC = () => {
   const [items, setItems] = useState<UserGameWithGame[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     try {
       setError(null);
       const params = new URLSearchParams({ sort });
       if (seg !== 'all') params.set('status', seg);
+      if (activeTagIds.length > 0) params.set('tags', activeTagIds.join(','));
       const r = await api<ListResp>(`/api/user-games?${params}`);
       setItems(r.items);
     } catch (err) {
@@ -61,11 +66,23 @@ const Library: React.FC = () => {
       else setError('Network error');
       setItems([]);
     }
-  }, [api, seg, sort]);
+  }, [api, seg, sort, activeTagIds]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    api<TagsResp>('/api/tags')
+      .then((r) => setAllTags(r.items))
+      .catch(() => setAllTags([]));
+  }, [api]);
+
+  const toggleTagFilter = (id: string) => {
+    setActiveTagIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   return (
     <IonPage>
@@ -104,6 +121,43 @@ const Library: React.FC = () => {
             <IonSelectOption value="name">Name (A–Z)</IonSelectOption>
           </IonSelect>
         </IonItem>
+
+        {allTags.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              padding: '4px 16px 12px',
+              overflowX: 'auto',
+              flexWrap: 'nowrap',
+            }}
+          >
+            {allTags.map((t) => (
+              <TagChip
+                key={t.id}
+                name={t.name}
+                color={t.color}
+                selected={activeTagIds.includes(t.id)}
+                onClick={() => toggleTagFilter(t.id)}
+              />
+            ))}
+            {activeTagIds.length > 0 && (
+              <span
+                onClick={() => setActiveTagIds([])}
+                style={{
+                  fontSize: 12,
+                  color: 'var(--ion-color-medium)',
+                  alignSelf: 'center',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  padding: '4px 6px',
+                }}
+              >
+                Clear
+              </span>
+            )}
+          </div>
+        )}
 
         {error && (
           <IonText color="danger">

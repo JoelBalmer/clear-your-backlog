@@ -15,8 +15,8 @@ Last updated: 2026-05-03
 | 3     | Auth (Clerk) + onboarding + tab shell  | ✅ Complete     |
 | 4     | IGDB proxy + Library + GameDetail      | ✅ Complete     |
 | 5     | Discover + Friends + public profiles   | ✅ Complete     |
-| 6     | Reusable components polish             | ⏳ Up next      |
-| 7     | Full README + mobile build instructions| ⬜ Pending      |
+| 6     | Tags + multi-tag filter + code-split   | ✅ Complete     |
+| 7     | Full README + Capacitor mobile docs    | ✅ Complete     |
 
 ---
 
@@ -83,17 +83,37 @@ Permissions are enforced in API handlers (`requireAuth()` from `api/_lib/auth.ts
 - GameDetail: "Friends who played this" section with their status + rating.
 - Routes wired in `Tabs.tsx`; `MeProvider` wraps the router in `App.tsx`.
 
-## Phase 6 — Reusable components ⬜
+## Phase 6 — Tags + multi-tag filter + code-split ✅
 
-- `StarRating` (display + input, half-star)
-- `GameCard`, `TagChip`, `StatusBadge`, `EmptyState`, `UserListItem`, `RatingSlider`
-- Polish placeholders into shared building blocks
+- `api/tags.ts` — GET (caller's tags), POST (create with name validation, conflict-aware), DELETE (auth-scoped). Tag name regex allows letters / numbers / space / `_` / `-`, 1–30 chars.
+- `api/user-game-tags.ts` — POST link, DELETE unlink. Verifies caller owns BOTH the user_game and the tag before allowing the link to prevent privilege escalation.
+- Extended `GET /api/user-games` to include `tagIds: string[]` per row and accept `?tags=id1,id2` (AND filter via subquery).
+- Extended `POST /api/user-games` to accept `tagIds: string[]` and atomically link only tags the caller owns.
+- `TagChip` component (selected / unselected states with color tint, optional remove button).
+- `TagPicker` component used inside the Add Game flow and the Game Detail page (chip group + inline "create tag" input).
+- `ManageTagsModal` opened from the Profile tab — full CRUD list with confirm-on-delete (cascade removes tag from all linked games).
+- Library: horizontally-scrolling tag filter chip strip above the list, multi-select AND filter, "Clear" affordance.
+- Code-split: each tab page (`Library`, `Discover`, `Friends`, `Profile`, `GameDetail`, `PublicProfile`) is now a `React.lazy` import with `<AppLoading />` Suspense fallback. Initial bundle no longer ships the full app — tab pages download on first visit.
 
-## Phase 7 — README + mobile build ⬜
+## Phase 7 — Full README + Capacitor mobile docs ✅
 
-- Expand README with feature tour and screenshots
-- Document mobile build (`npx cap add ios|android`, signing, App Store / Play Store basics)
-- Document operational concerns: how to roll a Clerk-only / Neon-only credential rotation, where logs live in Vercel
+- README rewritten: feature tour, full file layout (api + src), env var table, manual Twitch credential setup, deploy story, permissions model section explaining why every mutation goes through `requireAuth`, architectural notes capturing the gotchas (`.js` extensions for ESM, why DB lives in `api/_lib/`, lazy profile creation).
+- Capacitor section: per-platform `npx cap add` / `cap sync` / `cap open` flow for iOS and Android, signing notes, the "after every web change" sync command, pointer to live-reload for on-device dev.
+- ROADMAP — this file — kept as the per-phase changelog and architectural log. Open questions section lists what we deliberately deferred (Clerk webhook for delete, custom Clerk subdomain, denormalized activity feed).
+
+---
+
+## Done
+
+All 7 phases complete. Future improvements (out of the original 7-phase scope):
+
+- Clerk webhook for `user.deleted` to clean up orphan profile rows
+- Profile editing UI (display name, bio, avatar upload)
+- Notification when someone follows you
+- Per-tag color picker
+- Drag-to-reorder ranked lists ("my top 10 RPGs")
+- Activity feed denormalization once feed performance starts to suffer (~100k user_games or so)
+- Custom Clerk subdomain (paid Clerk plan) to remove the Clerk branding on the auth pages
 
 ---
 

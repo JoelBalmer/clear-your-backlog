@@ -25,6 +25,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { ApiError, useApi } from '../lib/api';
 import StarRating from '../components/StarRating';
 import StatusBadge from '../components/StatusBadge';
+import TagPicker from '../components/TagPicker';
 import type { FriendPlayedItem, Game, GameStatus, UserGame, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
@@ -47,6 +48,7 @@ const GameDetail: React.FC = () => {
 
   const [game, setGame] = useState<Game | null>(null);
   const [userGame, setUserGame] = useState<UserGame | null>(null);
+  const [tagIds, setTagIds] = useState<string[]>([]);
   const [friends, setFriends] = useState<FriendPlayedItem[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savingField, setSavingField] = useState<string | null>(null);
@@ -64,6 +66,7 @@ const GameDetail: React.FC = () => {
       setGame(gameR.game);
       const mine = listR.items.find((it) => it.userGame.igdbId === id);
       setUserGame(mine?.userGame ?? null);
+      setTagIds(mine?.tagIds ?? []);
       setNotesDraft(mine?.userGame.notes ?? '');
       setFriends(friendsR.items);
     } catch (err) {
@@ -89,6 +92,30 @@ const GameDetail: React.FC = () => {
       console.error('[game-detail] patch failed:', err);
     } finally {
       setSavingField(null);
+    }
+  };
+
+  const toggleTag = async (tagId: string) => {
+    if (!userGame) return;
+    const isLinked = tagIds.includes(tagId);
+    const next = isLinked ? tagIds.filter((x) => x !== tagId) : [...tagIds, tagId];
+    setTagIds(next);
+    try {
+      if (isLinked) {
+        await api(
+          `/api/user-game-tags?userGameId=${userGame.id}&tagId=${encodeURIComponent(tagId)}`,
+          { method: 'DELETE' },
+        );
+      } else {
+        await api('/api/user-game-tags', {
+          method: 'POST',
+          body: JSON.stringify({ userGameId: userGame.id, tagId }),
+        });
+      }
+    } catch (err) {
+      // revert
+      setTagIds(tagIds);
+      console.error('[game-detail] tag toggle failed:', err);
     }
   };
 
@@ -249,6 +276,12 @@ const GameDetail: React.FC = () => {
                 rows={3}
                 maxlength={1000}
               />
+            </IonItem>
+            <IonItem lines="none">
+              <IonLabel>
+                <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>Tags</h3>
+                <TagPicker selectedIds={tagIds} onToggle={toggleTag} />
+              </IonLabel>
             </IonItem>
           </IonList>
         ) : (

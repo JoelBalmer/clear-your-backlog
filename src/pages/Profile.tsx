@@ -12,14 +12,17 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { logOutOutline, mailOutline, openOutline } from 'ionicons/icons';
+import { logOutOutline, mailOutline, openOutline, pricetagsOutline } from 'ionicons/icons';
 import { SignOutButton, useUser } from '@clerk/clerk-react';
+import { useState } from 'react';
 import { useMe } from '../contexts/MeContext';
+import ManageTagsModal from '../components/ManageTagsModal';
 
 const Profile: React.FC = () => {
   const { user } = useUser();
   const { profile, status } = useMe();
   const loading = status === 'loading';
+  const [tagsOpen, setTagsOpen] = useState(false);
 
   const initial = (profile?.displayName ?? profile?.username ?? user?.firstName ?? '?')
     .slice(0, 1)
@@ -73,6 +76,13 @@ const Profile: React.FC = () => {
               </IonLabel>
             </IonItem>
           )}
+          <IonItem button detail onClick={() => setTagsOpen(true)}>
+            <IonIcon slot="start" icon={pricetagsOutline} />
+            <IonLabel>
+              <h3>Manage tags</h3>
+              <IonNote color="medium">Group your library by theme, platform, mood…</IonNote>
+            </IonLabel>
+          </IonItem>
           <SignOutButton>
             <IonItem button detail={false}>
               <IonIcon slot="start" icon={logOutOutline} color="danger" />
@@ -83,9 +93,12 @@ const Profile: React.FC = () => {
 
         <div style={{ padding: '8px 16px 32px' }}>
           <IonNote color="medium" style={{ fontSize: 12 }}>
-            Phase 5 of 7 — social features (friends, feed, public profiles) live.
+            Phase 7 of 7 — full feature set live: library, ratings, tags, friends, feed, public
+            profiles.
           </IonNote>
         </div>
+
+        <ManageTagsModal isOpen={tagsOpen} onDismiss={() => setTagsOpen(false)} />
       </IonContent>
     </IonPage>
   );

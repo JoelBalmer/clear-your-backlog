@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { db } from './_lib/db.js';
-import { gamesCache, userGames } from './_lib/schema.js';
+import { gamesCache, tags, userGameTags, userGames } from './_lib/schema.js';
 import { requireAuth, setCors } from './_lib/auth.js';
 
 const STATUSES = ['backlog', 'playing', 'played', 'dropped'] as const;
@@ -20,6 +20,10 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
   const userIdParam = req.query.userId ? String(req.query.userId) : null;
   const status = req.query.status ? String(req.query.status) : null;
   const sort = String(req.query.sort ?? 'recent');
+  // tags param: comma-separated tag IDs; matches games that have ALL of them (AND).
+  const tagFilter = req.query.tags
+    ? String(req.query.tags).split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
 
   // If no userId provided, default to caller's own library (requires auth).
   let targetUserId = userIdParam;
@@ -32,6 +36,17 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
   const conditions = [eq(userGames.userId, targetUserId)];
   if (status && (STATUSES as readonly string[]).includes(status)) {
     conditions.push(eq(userGames.status, status));
+  }
+
+  // AND-filter on tags: subquery returns user_game_ids that have all the requested tags.
+  if (tagFilter.length > 0) {
+    const matchingIds = db
+      .select({ userGameId: userGameTags.userGameId })
+      .from(userGameTags)
+      .where(inArray(userGameTags.tagId, tagFilter))
+      .groupBy(userGameTags.userGameId)
+      .having(sql`count(distinct ${userGameTags.tagId}) = ${tagFilter.length}`);
+    conditions.push(inArray(userGames.id, matchingIds));
   }
 
   let orderBy;
@@ -49,7 +64,26 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
     .where(and(...conditions))
     .orderBy(orderBy);
 
-  return res.status(200).json({ items: rows });
+  // Fetch tag IDs per user_game in one extra query, then group client-side.
+  const ids = rows.map((r) => r.userGame.id);
+  const tagLinks =
+    ids.length === 0
+      ? []
+      : await db
+          .select({ userGameId: userGameTags.userGameId, tagId: userGameTags.tagId })
+          .from(userGameTags)
+          .where(inArray(userGameTags.userGameId, ids));
+  const tagsByUserGame = new Map<string, string[]>();
+  for (const link of tagLinks) {
+    if (!tagsByUserGame.has(link.userGameId)) tagsByUserGame.set(link.userGameId, []);
+    tagsByUserGame.get(link.userGameId)!.push(link.tagId);
+  }
+  const items = rows.map((r) => ({
+    ...r,
+    tagIds: tagsByUserGame.get(r.userGame.id) ?? [],
+  }));
+
+  return res.status(200).json({ items });
 }
 
 async function handleCreate(req: VercelRequest, res: VercelResponse) {
@@ -109,6 +143,26 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
         notes: body.notes ? String(body.notes) : null,
       })
       .returning();
+
+    // Link any tags provided in the same request, but only ones the caller owns.
+    const requestedTagIds: string[] = Array.isArray(body.tagIds)
+      ? body.tagIds.map((x: unknown) => String(x)).filter(Boolean)
+      : [];
+    if (requestedTagIds.length > 0) {
+      const ownedTags = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(and(eq(tags.userId, me.userId), inArray(tags.id, requestedTagIds)));
+      const ownedSet = new Set(ownedTags.map((t) => t.id));
+      const validIds = requestedTagIds.filter((id: string) => ownedSet.has(id));
+      if (validIds.length > 0) {
+        await db
+          .insert(userGameTags)
+          .values(validIds.map((tagId: string) => ({ userGameId: created.id, tagId })))
+          .onConflictDoNothing();
+      }
+    }
+
     return res.status(201).json({ userGame: created });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

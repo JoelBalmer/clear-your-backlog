@@ -21,6 +21,7 @@ import {
 } from '@ionic/react';
 import { closeOutline, gameControllerOutline, searchOutline } from 'ionicons/icons';
 import StarRating from './StarRating';
+import TagPicker from './TagPicker';
 import { ApiError, useApi } from '../lib/api';
 import { searchIgdb } from '../lib/igdb/search';
 import type { GameStatus, IgdbResult } from '../types/models';
@@ -48,6 +49,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
   const [status, setStatus] = useState<GameStatus>('backlog');
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+  const [tagIds, setTagIds] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -93,6 +95,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
     setStatus('backlog');
     setRating(null);
     setNotes('');
+    setTagIds([]);
     setSubmitting(false);
     setSubmitError(null);
   };
@@ -114,6 +117,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
           status,
           rating,
           notes: notes.trim() || undefined,
+          tagIds,
           game: {
             name: picked.name,
             coverUrl: picked.coverUrl,
@@ -293,6 +297,19 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
                   rows={3}
                   maxlength={1000}
                 />
+              </IonItem>
+              <IonItem lines="none">
+                <IonLabel>
+                  <h3 style={{ fontWeight: 600, margin: '0 0 8px' }}>Tags</h3>
+                  <TagPicker
+                    selectedIds={tagIds}
+                    onToggle={(id) =>
+                      setTagIds((prev) =>
+                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+                      )
+                    }
+                  />
+                </IonLabel>
               </IonItem>
             </IonList>
 
