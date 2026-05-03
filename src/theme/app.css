@@ -1,0 +1,74 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 32px;
+  gap: 12px;
+  min-height: 60vh;
+}
+
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(236, 72, 153, 0.18));
+  margin-bottom: 8px;
+}
+
+.empty-state__icon ion-icon {
+  font-size: 48px;
+  color: var(--ion-color-primary);
+}
+
+.empty-state h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.profile-header {
+  padding: 24px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.profile-header__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 36px;
+  font-weight: 700;
+  box-shadow: 0 12px 32px -12px rgba(99, 102, 241, 0.6);
+}
+
+.profile-header__name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.profile-header__handle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+}

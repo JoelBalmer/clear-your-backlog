@@ -1,7 +1,13 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Home from './pages/Home';
+import { SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
+import RequireAuth from './components/RequireAuth';
+import AppLoading from './components/AppLoading';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
+import OnboardingPage from './pages/OnboardingPage';
+import Tabs from './pages/Tabs';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -11,7 +17,7 @@ import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
 
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
@@ -19,32 +25,57 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
+/* Theme */
 import '@ionic/react/css/palettes/dark.system.css';
-
-/* Theme variables */
 import './theme/variables.css';
+import './theme/app.css';
 
 setupIonicReact();
+
+const RootRedirect: React.FC = () => {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded) return <AppLoading />;
+  return <Redirect to={isSignedIn ? '/tabs/library' : '/sign-in'} />;
+};
 
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
+        <Switch>
+          <Route path="/sign-in">
+            <SignedOut>
+              <SignInPage />
+            </SignedOut>
+            <SignedIn>
+              <Redirect to="/tabs/library" />
+            </SignedIn>
+          </Route>
+          <Route path="/sign-up">
+            <SignedOut>
+              <SignUpPage />
+            </SignedOut>
+            <SignedIn>
+              <Redirect to="/onboarding" />
+            </SignedIn>
+          </Route>
+          <Route path="/onboarding">
+            <RequireAuth>
+              <OnboardingPage />
+            </RequireAuth>
+          </Route>
+          <Route path="/tabs">
+            <RequireAuth>
+              <Tabs />
+            </RequireAuth>
+          </Route>
+          <Route exact path="/">
+            <RootRedirect />
+          </Route>
+          <Route>
+            <RootRedirect />
+          </Route>
+        </Switch>
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
