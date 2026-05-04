@@ -20,6 +20,8 @@
     "db:studio": "dotenv -e .env.development.local -- drizzle-kit studio"
   },
   "dependencies": {
+    "express": "^5.1.0",
+    "tsx": "^4.19.3",
     "@capacitor/app": "8.1.0",
     "@capacitor/core": "8.3.1",
     "@capacitor/haptics": "8.0.2",
@@ -46,6 +48,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.4.3",
+    "@types/express": "^5.0.3",
     "@types/node": "^25.6.0",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
