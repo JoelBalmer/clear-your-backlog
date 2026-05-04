@@ -4,7 +4,7 @@ import { db } from '../_lib/db.js';
 import { userGames } from '../_lib/schema.js';
 import { requireAuth, setCors } from '../_lib/auth.js';
 
-const STATUSES = ['backlog', 'playing', 'played', 'dropped'] as const;
+const STATUSES = ['backlog', 'playing', 'played', 'dropped', 'wishlist'] as const;
 type Status = (typeof STATUSES)[number];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

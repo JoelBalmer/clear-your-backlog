@@ -15,6 +15,13 @@
       "when": 1777848912443,
       "tag": "0001_unknown_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746403200000,
+      "tag": "0002_add_wishlist_status",
+      "breakpoints": true
     }
   ]
 }

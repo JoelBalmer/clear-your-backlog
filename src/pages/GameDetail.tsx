@@ -19,6 +19,7 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { gameControllerOutline, trashOutline } from 'ionicons/icons';
+import PlatformBadge from '../components/PlatformBadge';
 import { useHistory, useParams } from 'react-router-dom';
 import { ApiError, useApi } from '../lib/api';
 import StarRating from '../components/StarRating';
@@ -210,11 +211,21 @@ const GameDetail: React.FC = () => {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 className="detail-hero__title">{game.name}</h1>
-            <p className="detail-hero__meta">
-              {game.releaseYear ? `${game.releaseYear}` : ''}
-              {game.releaseYear && (game.platforms?.length ?? 0) > 0 ? ' · ' : ''}
-              {(game.platforms ?? []).slice(0, 4).join(', ')}
-            </p>
+            {game.releaseYear && (
+              <p className="detail-hero__meta">{game.releaseYear}</p>
+            )}
+            {(game.platforms ?? []).length > 0 && (
+              <div className="detail-hero__platforms">
+                {(game.platforms ?? []).map((p) => (
+                  <PlatformBadge
+                    key={p}
+                    name={p}
+                    selected={userGame?.playedOn === p}
+                    onClick={userGame ? () => patch('playedOn', { playedOn: userGame.playedOn === p ? null : p }) : undefined}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

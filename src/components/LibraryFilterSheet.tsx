@@ -19,7 +19,7 @@ import type { GameStatus, Tag } from '../types/models';
 
 export type SortValue = 'recent' | 'rating' | 'name';
 
-const ALL_STATUSES: GameStatus[] = ['backlog', 'playing', 'played', 'dropped'];
+const ALL_STATUSES: GameStatus[] = ['wishlist', 'backlog', 'playing', 'played', 'dropped'];
 
 type Props = {
   isOpen: boolean;

@@ -5,7 +5,7 @@
 // Numeric and timestamp fields come back from the API as strings (Postgres
 // numeric -> string in JSON, timestamp -> ISO string).
 
-export type GameStatus = 'backlog' | 'playing' | 'played' | 'dropped';
+export type GameStatus = 'backlog' | 'playing' | 'played' | 'dropped' | 'wishlist';
 
 export type Profile = {
   id: string;

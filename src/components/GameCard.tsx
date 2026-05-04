@@ -2,6 +2,7 @@ import { IonIcon, IonItem, IonLabel } from '@ionic/react';
 import { gameControllerOutline } from 'ionicons/icons';
 import StarRating from './StarRating';
 import StatusBadge from './StatusBadge';
+import PlatformBadge from './PlatformBadge';
 import type { UserGameWithGame } from '../types/models';
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 const GameCard: React.FC<Props> = ({ item, onClick, routerLink }) => {
   const { userGame, game } = item;
   const rating = userGame.rating != null ? Number(userGame.rating) : null;
+  const platforms = (game.platforms ?? []).slice(0, 2);
 
   return (
     <IonItem button detail={false} onClick={onClick} routerLink={routerLink} className="game-card">
@@ -28,9 +30,15 @@ const GameCard: React.FC<Props> = ({ item, onClick, routerLink }) => {
       <IonLabel>
         <h2 className="game-card__title">{game.name}</h2>
         <p className="game-card__meta">
-          {game.releaseYear ? `${game.releaseYear} · ` : ''}
-          {(game.platforms ?? []).slice(0, 2).join(', ')}
+          {game.releaseYear ? `${game.releaseYear}` : ''}
         </p>
+        {platforms.length > 0 && (
+          <div className="game-card__platforms">
+            {platforms.map((p) => (
+              <PlatformBadge key={p} name={p} />
+            ))}
+          </div>
+        )}
         <div className="game-card__row">
           <StatusBadge status={userGame.status} size="sm" />
           {rating !== null && <StarRating value={rating} size={14} />}
