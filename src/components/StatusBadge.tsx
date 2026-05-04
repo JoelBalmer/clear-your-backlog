@@ -5,6 +5,7 @@ const LABELS: Record<GameStatus, string> = {
   playing: 'Playing',
   played: 'Played',
   dropped: 'Dropped',
+  wishlist: 'Wishlist',
 };
 
 const COLORS: Record<GameStatus, string> = {
@@ -12,6 +13,7 @@ const COLORS: Record<GameStatus, string> = {
   playing: '#10b981',
   played: '#6366f1',
   dropped: '#ef4444',
+  wishlist: '#f59e0b',
 };
 
 const StatusBadge: React.FC<{ status: GameStatus; size?: 'sm' | 'md' }> = ({

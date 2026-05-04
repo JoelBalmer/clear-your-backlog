@@ -60,7 +60,7 @@ export const userGames = pgTable(
     uniqueIndex('user_games_user_igdb_unique').on(t.userId, t.igdbId),
     index('user_games_user_status_idx').on(t.userId, t.status),
     index('user_games_user_rating_idx').on(t.userId, sql`${t.rating} desc`),
-    check('user_games_status_check', sql`${t.status} in ('backlog','playing','played','dropped')`),
+    check('user_games_status_check', sql`${t.status} in ('backlog','playing','played','dropped','wishlist')`),
     check('user_games_rating_check', sql`${t.rating} is null or (${t.rating} >= 0.5 and ${t.rating} <= 10)`),
   ],
 );

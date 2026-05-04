@@ -21,6 +21,7 @@ import { closeOutline, gameControllerOutline, searchOutline } from 'ionicons/ico
 import StarRating from './StarRating';
 import StatusChips from './StatusChips';
 import TagPicker from './TagPicker';
+import PlatformBadge from './PlatformBadge';
 import { ApiError, useApi } from '../lib/api';
 import { searchIgdb } from '../lib/igdb/search';
 import { success as hapticSuccess, tap as hapticTap, error as hapticError } from '../lib/haptics';
@@ -50,6 +51,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [tagIds, setTagIds] = useState<string[]>([]);
+  const [playedOn, setPlayedOn] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -96,6 +98,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
     setRating(null);
     setNotes('');
     setTagIds([]);
+    setPlayedOn(null);
     setSubmitting(false);
     setSubmitError(null);
   };
@@ -118,6 +121,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
           rating,
           notes: notes.trim() || undefined,
           tagIds,
+          playedOn: playedOn || undefined,
           game: {
             name: picked.name,
             coverUrl: picked.coverUrl,
@@ -224,11 +228,16 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="search-result__title">{r.name}</p>
-                    <p className="search-result__meta">
-                      {r.releaseYear ? `${r.releaseYear}` : ''}
-                      {r.releaseYear && r.platforms.length ? ' · ' : ''}
-                      {r.platforms.slice(0, 3).join(', ')}
-                    </p>
+                    {r.releaseYear && (
+                      <p className="search-result__meta">{r.releaseYear}</p>
+                    )}
+                    {r.platforms.length > 0 && (
+                      <div className="search-result__platforms">
+                        {r.platforms.slice(0, 3).map((p) => (
+                          <PlatformBadge key={p} name={p} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -257,11 +266,21 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 className="detail-hero__title">{picked.name}</h2>
-                <p className="detail-hero__meta">
-                  {picked.releaseYear ? `${picked.releaseYear}` : ''}
-                  {picked.releaseYear && picked.platforms.length ? ' · ' : ''}
-                  {picked.platforms.slice(0, 3).join(', ')}
-                </p>
+                {picked.releaseYear && (
+                  <p className="detail-hero__meta">{picked.releaseYear}</p>
+                )}
+                {picked.platforms.length > 0 && (
+                  <div className="detail-hero__platforms">
+                    {picked.platforms.map((p) => (
+                      <PlatformBadge
+                        key={p}
+                        name={p}
+                        selected={playedOn === p}
+                        onClick={() => setPlayedOn(playedOn === p ? null : p)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

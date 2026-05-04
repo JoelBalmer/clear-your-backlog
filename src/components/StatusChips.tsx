@@ -1,7 +1,7 @@
 import StatusBadge from './StatusBadge';
 import type { GameStatus } from '../types/models';
 
-const ALL: GameStatus[] = ['backlog', 'playing', 'played', 'dropped'];
+const ALL: GameStatus[] = ['wishlist', 'backlog', 'playing', 'played', 'dropped'];
 
 type Props = {
   value: GameStatus;
