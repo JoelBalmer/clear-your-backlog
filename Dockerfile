@@ -8,11 +8,13 @@ RUN npm ci
 
 COPY . .
 
-# VITE_CLERK_PUBLISHABLE_KEY is a public key that gets baked into the JS
-# bundle at build time. Set it as a variable in Railway's dashboard and
-# Railway will pass it here automatically as a build arg.
+# Both names for the same public key — vite.config.ts accepts either.
+# Railway passes all service Variables as Docker build args automatically,
+# so whichever name you used in the Variables tab will be picked up.
 ARG VITE_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 RUN npm run build
 
