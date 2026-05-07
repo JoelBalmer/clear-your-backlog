@@ -56,7 +56,13 @@ app.all('/api/igdb-search', (req: Request, res: Response) =>
   igdbSearchHandler(req as any, res as any),
 );
 app.all('/api/tags', (req: Request, res: Response) => tagsHandler(req as any, res as any));
-app.all('/api/profile', (req: Request, res: Response) => profileHandler(req as any, res as any));
+app.all('/api/profile', (req: Request, res: Response) => {
+  console.log('[profile]', req.method, req.url, 'query:', JSON.stringify(req.query));
+  for (const key of Object.keys(req.query)) {
+    if (Array.isArray(req.query[key])) req.query[key] = (req.query[key] as string[])[0];
+  }
+  return profileHandler(req as any, res as any);
+});
 app.all('/api/follows', (req: Request, res: Response) => followsHandler(req as any, res as any));
 app.all('/api/feed', (req: Request, res: Response) => feedHandler(req as any, res as any));
 app.all('/api/account', (req: Request, res: Response) => accountHandler(req as any, res as any));
