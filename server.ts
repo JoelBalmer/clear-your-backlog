@@ -78,7 +78,7 @@ app.all('/api/users', (req: Request, res: Response) => usersHandler(req as any, 
 // Serve the Vite build output and fall back to index.html for client-side routing.
 const distPath = join(__dirname, 'dist');
 app.use(express.static(distPath));
-app.get('*', (_req, res) => res.sendFile(join(distPath, 'index.html')));
+app.get('{*path}', (_req, res) => res.sendFile(join(distPath, 'index.html')));
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const port = Number(process.env.PORT ?? 3000);
