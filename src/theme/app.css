@@ -507,6 +507,39 @@ button.platform-badge {
   margin-top: 4px;
 }
 
+/* Simple text list view */
+.game-list-row {
+  --min-height: 44px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  --inner-padding-end: 12px;
+}
+.game-list-row__name {
+  font-size: 15px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+.game-list-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.game-list-row__tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--ion-color-step-100, rgba(0, 0, 0, 0.07));
+  color: var(--ion-color-step-700, #4b5563);
+  white-space: nowrap;
+}
+
 /* Card art grid view */
 .game-grid {
   display: grid;
