@@ -6,15 +6,16 @@ type Props = {
   item: UserGameWithGame;
   allTags?: Tag[];
   routerLink?: string;
+  onClick?: () => void;
 };
 
-const GameListRow: React.FC<Props> = ({ item, allTags = [], routerLink }) => {
+const GameListRow: React.FC<Props> = ({ item, allTags = [], routerLink, onClick }) => {
   const { game } = item;
   const platforms = (game.platforms ?? []).slice(0, 2);
   const tags = allTags.filter((t) => (item.tagIds ?? []).includes(t.id)).slice(0, 2);
 
   return (
-    <IonItem button detail={false} routerLink={routerLink} className="game-list-row">
+    <IonItem button detail={false} routerLink={routerLink} onClick={onClick} className="game-list-row">
       <span className="game-list-row__name">{game.name}</span>
       <div slot="end" className="game-list-row__meta">
         {platforms.map((p) => (

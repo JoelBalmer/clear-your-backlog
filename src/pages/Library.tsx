@@ -23,6 +23,7 @@ import GameCard from '../components/GameCard';
 import GameCardArt from '../components/GameCardArt';
 import GameListRow from '../components/GameListRow';
 import AddGameModal from '../components/AddGameModal';
+import LibraryGameModal from '../components/LibraryGameModal';
 import LibraryFilterSheet, { type SortValue } from '../components/LibraryFilterSheet';
 import GameCardSkeleton from '../components/Skeleton/GameCardSkeleton';
 import ThemeButton from '../components/ThemeButton';
@@ -50,6 +51,7 @@ const Library: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<UserGameWithGame | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(readViewMode);
@@ -184,7 +186,7 @@ const Library: React.FC = () => {
               <GameCard
                 key={item.userGame.id}
                 item={item}
-                routerLink={`/tabs/library/g/${item.userGame.igdbId}`}
+                onClick={() => setSelectedItem(item)}
               />
             ))}
           </IonList>
@@ -196,7 +198,7 @@ const Library: React.FC = () => {
               <GameCardArt
                 key={item.userGame.id}
                 item={item}
-                routerLink={`/tabs/library/g/${item.userGame.igdbId}`}
+                onClick={() => setSelectedItem(item)}
               />
             ))}
           </div>
@@ -209,7 +211,7 @@ const Library: React.FC = () => {
                 key={item.userGame.id}
                 item={item}
                 allTags={allTags}
-                routerLink={`/tabs/library/g/${item.userGame.igdbId}`}
+                onClick={() => setSelectedItem(item)}
               />
             ))}
           </IonList>
@@ -220,6 +222,15 @@ const Library: React.FC = () => {
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
+
+        <LibraryGameModal
+          isOpen={!!selectedItem}
+          item={selectedItem}
+          onDismiss={(changed) => {
+            setSelectedItem(null);
+            if (changed) load();
+          }}
+        />
 
         <AddGameModal
           isOpen={showAdd}
