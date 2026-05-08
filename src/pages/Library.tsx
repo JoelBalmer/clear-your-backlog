@@ -21,7 +21,7 @@ import { add, gridOutline, libraryOutline, listOutline, reorderFourOutline, opti
 import { ApiError, useApi } from '../lib/api';
 import GameCard from '../components/GameCard';
 import GameCardArt from '../components/GameCardArt';
-import GameCardList from '../components/GameCardList';
+import GameListRow from '../components/GameListRow';
 import AddGameModal from '../components/AddGameModal';
 import LibraryFilterSheet, { type SortValue } from '../components/LibraryFilterSheet';
 import GameCardSkeleton from '../components/Skeleton/GameCardSkeleton';
@@ -36,8 +36,8 @@ const STORAGE_KEY = 'library-view';
 
 function readViewMode(): ViewMode {
   const stored = localStorage.getItem(STORAGE_KEY);
-  // migrate old value 'list' (now renamed to 'detail')
-  if (stored === 'list') return 'detail';
+  if (stored === 'list') return 'detail'; // old name for detail view
+  if (stored === 'text') return 'list';   // old name for compact list view
   if (stored === 'cards' || stored === 'detail') return stored;
   return 'detail';
 }
@@ -205,9 +205,10 @@ const Library: React.FC = () => {
         {items && items.length > 0 && viewMode === 'list' && (
           <IonList lines="full">
             {items.map((item) => (
-              <GameCardList
+              <GameListRow
                 key={item.userGame.id}
                 item={item}
+                allTags={allTags}
                 routerLink={`/tabs/library/g/${item.userGame.igdbId}`}
               />
             ))}
