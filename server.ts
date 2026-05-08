@@ -40,10 +40,15 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // matches the more-specific path first.
 
 app.all('/api/user-games/:id', (req: Request, res: Response) => {
-  // Object.assign(req.query, req.params) is unreliable in Express 5 if req.query
-  // is a lazy getter — the mutated object is discarded on the next access.
-  // Replacing req.query with a new plain object on the request itself is reliable.
-  Object.assign(req, { query: { ...req.query, id: req.params.id } });
+  // req.query is a getter-only property on IncomingMessage's prototype in Express 5.
+  // Object.assign would throw "Cannot set property query … which has only a getter".
+  // Object.defineProperty shadows it with a plain own property instead.
+  Object.defineProperty(req, 'query', {
+    value: { ...req.query, id: req.params.id },
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
   return userGamesIdHandler(req as any, res as any);
 });
 app.all('/api/user-games', (req: Request, res: Response) =>
@@ -51,7 +56,12 @@ app.all('/api/user-games', (req: Request, res: Response) =>
 );
 
 app.all('/api/games/:igdbId', (req: Request, res: Response) => {
-  Object.assign(req, { query: { ...req.query, igdbId: req.params.igdbId } });
+  Object.defineProperty(req, 'query', {
+    value: { ...req.query, igdbId: req.params.igdbId },
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
   return gamesHandler(req as any, res as any);
 });
 
