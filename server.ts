@@ -40,7 +40,10 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // matches the more-specific path first.
 
 app.all('/api/user-games/:id', (req: Request, res: Response) => {
-  Object.assign(req.query, req.params); // expose :id as req.query.id
+  // Object.assign(req.query, req.params) is unreliable in Express 5 if req.query
+  // is a lazy getter — the mutated object is discarded on the next access.
+  // Replacing req.query with a new plain object on the request itself is reliable.
+  Object.assign(req, { query: { ...req.query, id: req.params.id } });
   return userGamesIdHandler(req as any, res as any);
 });
 app.all('/api/user-games', (req: Request, res: Response) =>
@@ -48,7 +51,7 @@ app.all('/api/user-games', (req: Request, res: Response) =>
 );
 
 app.all('/api/games/:igdbId', (req: Request, res: Response) => {
-  Object.assign(req.query, req.params); // expose :igdbId as req.query.igdbId
+  Object.assign(req, { query: { ...req.query, igdbId: req.params.igdbId } });
   return gamesHandler(req as any, res as any);
 });
 
