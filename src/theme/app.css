@@ -611,7 +611,7 @@ button.platform-badge {
   letter-spacing: 0.3px;
 }
 
-/* ── Compact list row (GameCardList) ─────────────────────────────────────── */
+/* ── Compact list row (GameCardList) ────────────────────────────────────────────── */
 .game-list-row {
   --min-height: 44px;
 }
@@ -625,4 +625,99 @@ button.platform-badge {
   font-size: 12px;
   flex-shrink: 0;
   margin-inline-start: 8px;
+}
+
+/* ── Steam import review rows ─────────────────────────────────────────────────────── */
+.steam-review-header {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--ion-color-step-100, rgba(0,0,0,0.1));
+}
+
+.steam-review-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ion-color-step-100, rgba(0,0,0,0.06));
+  transition: opacity 0.15s ease;
+}
+
+.steam-review-row--excluded {
+  opacity: 0.35;
+}
+
+.steam-review-row__check {
+  flex-shrink: 0;
+  margin-top: 14px;
+}
+
+.steam-review-row__cover {
+  width: 36px;
+  height: 50px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--ion-color-step-100, rgba(0,0,0,0.08));
+  display: grid;
+  place-items: center;
+}
+
+.steam-review-row__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.steam-review-row__info {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.steam-review-row__name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ion-text-color);
+}
+
+.steam-review-row__meta {
+  font-size: 11px;
+  color: var(--ion-color-medium);
+  margin-top: 2px;
+}
+
+.steam-review-row__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.steam-review-row__clear-rating {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ion-color-medium);
+  font-size: 11px;
+  padding: 0;
+  line-height: 1;
+}
+
+.steam-progress-track {
+  width: 200px;
+  height: 4px;
+  background: var(--ion-color-step-150, rgba(0,0,0,0.1));
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.steam-progress-fill {
+  height: 100%;
+  background: var(--ion-color-primary);
+  border-radius: 2px;
+  transition: width 0.2s ease;
 }
