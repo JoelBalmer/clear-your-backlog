@@ -577,3 +577,19 @@ button.platform-badge {
   margin: 0;
   letter-spacing: 0.3px;
 }
+
+/* ── Compact list row (GameCardList) ─────────────────────────────────────── */
+.game-list-row {
+  --min-height: 44px;
+}
+.game-list-row__name {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-list-row__platform {
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-inline-start: 8px;
+}
