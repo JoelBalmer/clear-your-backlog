@@ -1,0 +1,11 @@
+[build]
+  # Tell Railway to use our Dockerfile rather than Nixpacks auto-detection.
+  dockerfilePath = "Dockerfile"
+
+[deploy]
+  # Railway will replace ${{PORT}} with the actual assigned port.
+  # The server.ts already reads process.env.PORT so no extra config needed.
+  healthcheckPath = "/health"
+  healthcheckTimeout = 60
+  restartPolicyType = "on_failure"
+  restartPolicyMaxRetries = 3

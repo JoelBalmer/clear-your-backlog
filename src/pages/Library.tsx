@@ -15,11 +15,13 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  useIonViewWillEnter,
 } from '@ionic/react';
-import { add, gridOutline, libraryOutline, listOutline, optionsOutline } from 'ionicons/icons';
+import { add, gridOutline, libraryOutline, listOutline, reorderFourOutline, optionsOutline } from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
 import GameCard from '../components/GameCard';
 import GameCardArt from '../components/GameCardArt';
+import GameCardList from '../components/GameCardList';
 import AddGameModal from '../components/AddGameModal';
 import LibraryFilterSheet, { type SortValue } from '../components/LibraryFilterSheet';
 import GameCardSkeleton from '../components/Skeleton/GameCardSkeleton';
@@ -28,9 +30,17 @@ import type { GameStatus, Tag, UserGameWithGame } from '../types/models';
 
 type ListResp = { items: UserGameWithGame[] };
 type TagsResp = { items: Tag[] };
-type ViewMode = 'list' | 'cards';
+type ViewMode = 'cards' | 'detail' | 'list';
 
 const STORAGE_KEY = 'library-view';
+
+function readViewMode(): ViewMode {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  // migrate old value 'list' (now renamed to 'detail')
+  if (stored === 'list') return 'detail';
+  if (stored === 'cards' || stored === 'detail') return stored;
+  return 'detail';
+}
 
 const Library: React.FC = () => {
   const api = useApi();
@@ -42,13 +52,11 @@ const Library: React.FC = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>(
-    () => (localStorage.getItem(STORAGE_KEY) as ViewMode | null) ?? 'list',
-  );
+  const [viewMode, setViewMode] = useState<ViewMode>(readViewMode);
 
-  const toggleView = () => {
+  const cycleView = () => {
     setViewMode((prev) => {
-      const next = prev === 'list' ? 'cards' : 'list';
+      const next: ViewMode = prev === 'cards' ? 'detail' : prev === 'detail' ? 'list' : 'cards';
       localStorage.setItem(STORAGE_KEY, next);
       return next;
     });
@@ -79,6 +87,10 @@ const Library: React.FC = () => {
       .catch(() => setAllTags([]));
   }, [api]);
 
+  useIonViewWillEnter(() => {
+    load();
+  });
+
   const activeFilterCount = statuses.length + activeTagIds.length;
 
   return (
@@ -87,8 +99,8 @@ const Library: React.FC = () => {
         <IonToolbar>
           <IonTitle>Library</IonTitle>
           <IonButtons slot="end">
-            <IonButton fill="clear" onClick={toggleView} aria-label={viewMode === 'list' ? 'Switch to card view' : 'Switch to list view'}>
-              <IonIcon icon={viewMode === 'list' ? gridOutline : listOutline} />
+            <IonButton fill="clear" onClick={cycleView} aria-label="Cycle view mode">
+              <IonIcon icon={viewMode === 'cards' ? gridOutline : viewMode === 'detail' ? listOutline : reorderFourOutline} />
             </IonButton>
             <ThemeButton />
           </IonButtons>
@@ -166,7 +178,7 @@ const Library: React.FC = () => {
           </div>
         )}
 
-        {items && items.length > 0 && viewMode === 'list' && (
+        {items && items.length > 0 && viewMode === 'detail' && (
           <IonList lines="full">
             {items.map((item) => (
               <GameCard
@@ -188,6 +200,18 @@ const Library: React.FC = () => {
               />
             ))}
           </div>
+        )}
+
+        {items && items.length > 0 && viewMode === 'list' && (
+          <IonList lines="full">
+            {items.map((item) => (
+              <GameCardList
+                key={item.userGame.id}
+                item={item}
+                routerLink={`/tabs/library/g/${item.userGame.igdbId}`}
+              />
+            ))}
+          </IonList>
         )}
 
         <IonFab slot="fixed" vertical="bottom" horizontal="end">
