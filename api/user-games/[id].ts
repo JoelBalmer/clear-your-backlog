@@ -14,7 +14,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const me = await requireAuth(req, res);
   if (!me) return;
 
-  const id = String(req.query.id ?? '');
+  // req.query.id is set by Vercel's file routing and by server.ts for Express.
+  // Fall back to req.params.id (Express route param) in case the query merge failed.
+  const id = String(req.query.id ?? (req as any).params?.id ?? '');
   if (!id) return res.status(400).json({ error: 'missing_id' });
 
   if (req.method === 'PATCH') return handlePatch(req, res, me.userId, id);

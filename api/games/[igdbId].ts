@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const me = await requireAuth(req, res);
   if (!me) return;
 
-  const igdbId = Number(req.query.igdbId);
+  const igdbId = Number(req.query.igdbId ?? (req as any).params?.igdbId);
   if (!Number.isFinite(igdbId) || igdbId <= 0)
     return res.status(400).json({ error: 'invalid_igdb_id' });
 
