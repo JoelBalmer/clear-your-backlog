@@ -59,7 +59,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!query.trim() || picked) {
+    if (!query.trim()) {
       setResults([]);
       setSearching(false);
       return;
@@ -86,7 +86,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, api, picked]);
+  }, [query, api]); // `picked` intentionally omitted — results persist when going back from game detail
 
   const reset = () => {
     setQuery('');

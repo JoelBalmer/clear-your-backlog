@@ -7,14 +7,16 @@ import type { UserGameWithGame } from '../types/models';
 type Props = {
   item: UserGameWithGame;
   routerLink?: string;
+  onClick?: () => void;
 };
 
-const GameCardArt: React.FC<Props> = ({ item, routerLink }) => {
+const GameCardArt: React.FC<Props> = ({ item, routerLink, onClick }) => {
   const { userGame, game } = item;
   const history = useHistory();
 
   const handleClick = () => {
-    if (routerLink) history.push(routerLink);
+    if (onClick) { onClick(); }
+    else if (routerLink) history.push(routerLink);
   };
 
   return (
