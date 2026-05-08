@@ -20,6 +20,7 @@ import {
   useIonRouter,
 } from '@ionic/react';
 import {
+  cloudDownloadOutline,
   contrastOutline,
   documentTextOutline,
   logOutOutline,
@@ -35,6 +36,7 @@ import { useApi, ApiError } from '../lib/api';
 import { useMe } from '../contexts/MeContext';
 import { useTheme, type ThemeChoice } from '../contexts/ThemeContext';
 import ManageTagsModal from '../components/ManageTagsModal';
+import SteamImportModal from '../components/SteamImportModal';
 import ThemeButton from '../components/ThemeButton';
 import { warning as hapticWarning, error as hapticError } from '../lib/haptics';
 
@@ -49,6 +51,7 @@ const Profile: React.FC = () => {
   const { choice, setChoice } = useTheme();
   const loading = status === 'loading';
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [steamImportOpen, setSteamImportOpen] = useState(false);
   const [emailOptOut, setEmailOptOut] = useState<boolean | null>(null);
   const [confirm1, setConfirm1] = useState(false);
   const [confirm2, setConfirm2] = useState(false);
@@ -154,6 +157,19 @@ const Profile: React.FC = () => {
 
         <IonList inset>
           <IonListHeader>
+            <IonLabel>Data</IonLabel>
+          </IonListHeader>
+          <IonItem button detail onClick={() => setSteamImportOpen(true)}>
+            <IonIcon slot="start" icon={cloudDownloadOutline} />
+            <IonLabel>
+              <h3>Import Steam library</h3>
+              <IonNote color="medium">Add games from your Steam account</IonNote>
+            </IonLabel>
+          </IonItem>
+        </IonList>
+
+        <IonList inset>
+          <IonListHeader>
             <IonLabel>Appearance</IonLabel>
           </IonListHeader>
           <IonItem lines="none">
@@ -238,6 +254,7 @@ const Profile: React.FC = () => {
         </div>
 
         <ManageTagsModal isOpen={tagsOpen} onDismiss={() => setTagsOpen(false)} />
+        <SteamImportModal isOpen={steamImportOpen} onDismiss={() => setSteamImportOpen(false)} />
 
         <IonAlert
           isOpen={confirm1}
