@@ -25,6 +25,7 @@ import accountHandler from './api/account.js';
 import gameFriendsHandler from './api/game-friends.js';
 import userGameTagsHandler from './api/user-game-tags.js';
 import usersHandler from './api/users.js';
+import steamImportHandler from './api/steam-import.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -86,6 +87,9 @@ app.all('/api/user-game-tags', (req: Request, res: Response) =>
   userGameTagsHandler(req as any, res as any),
 );
 app.all('/api/users', (req: Request, res: Response) => usersHandler(req as any, res as any));
+app.all('/api/steam-import', (req: Request, res: Response) =>
+  steamImportHandler(req as any, res as any),
+);
 
 // ── Static frontend ───────────────────────────────────────────────────────────
 // Serve the Vite build output and fall back to index.html for client-side routing.
