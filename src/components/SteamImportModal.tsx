@@ -262,19 +262,37 @@ const SteamImportModal: React.FC<Props> = ({ isOpen, onDismiss }) => {
     let imported = 0;
     for (const game of toImport) {
       try {
+        const igdbId = game.igdbMatch!.igdbId;
+
+        // Fetch real IGDB metadata so the library shows the correct cover art.
+        // Falls back to the mock data if the fetch fails.
+        let gameData = {
+          name: game.igdbMatch!.name,
+          coverUrl: game.igdbMatch!.coverUrl,
+          platforms: game.igdbMatch!.platforms,
+          releaseYear: game.igdbMatch!.releaseYear,
+          summary: game.igdbMatch!.summary,
+        };
+        try {
+          const r = await api<{ game: { name: string; coverUrl: string | null; platforms: string[] | null; releaseYear: number | null; summary: string | null } }>(`/api/games/${igdbId}`);
+          gameData = {
+            name: r.game.name,
+            coverUrl: r.game.coverUrl,
+            platforms: r.game.platforms ?? [],
+            releaseYear: r.game.releaseYear,
+            summary: r.game.summary,
+          };
+        } catch {
+          // non-fatal: proceed with mock metadata
+        }
+
         await api('/api/user-games', {
           method: 'POST',
           body: JSON.stringify({
-            igdbId: game.igdbMatch!.igdbId,
+            igdbId,
             status: game.status,
             rating: game.rating,
-            game: {
-              name: game.igdbMatch!.name,
-              coverUrl: game.igdbMatch!.coverUrl,
-              platforms: game.igdbMatch!.platforms,
-              releaseYear: game.igdbMatch!.releaseYear,
-              summary: game.igdbMatch!.summary,
-            },
+            game: gameData,
           }),
         });
         imported++;
