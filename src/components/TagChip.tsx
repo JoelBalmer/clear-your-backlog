@@ -1,5 +1,5 @@
 import { IonIcon } from '@ionic/react';
-import { closeOutline } from 'ionicons/icons';
+import { closeOutline, checkmarkOutline } from 'ionicons/icons';
 
 type Props = {
   name: string;
@@ -10,39 +10,29 @@ type Props = {
 };
 
 const TagChip: React.FC<Props> = ({ name, color, selected = false, onClick, onRemove }) => {
-  const accent = color ?? '#6366f1';
-  const bg = selected ? `${accent}33` : `${accent}1a`;
-  const fg = selected ? accent : 'var(--ion-text-color, #111)';
-  const border = selected ? accent : 'transparent';
-
+  const c = color ?? '#6366f1';
   return (
     <span
-      onClick={onClick}
+      className={`prop-chip${selected ? ' prop-chip--on' : ''}${onClick ? ' prop-chip--clickable' : ''}`}
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 10px',
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
-        background: bg,
-        color: fg,
-        border: `1px solid ${border}`,
-        cursor: onClick || onRemove ? 'pointer' : 'default',
-        userSelect: 'none',
-        whiteSpace: 'nowrap',
-      }}
+        '--chip-fg': c,
+        '--chip-bg': `${c}15`,
+        '--chip-border': `${c}50`,
+        '--chip-bg-on': `${c}2a`,
+      } as React.CSSProperties}
+      onClick={onClick}
     >
+      {selected && <IonIcon icon={checkmarkOutline} className="prop-chip__check" />}
+      <span className="prop-chip__hash">#</span>
       {name}
       {onRemove && (
         <IonIcon
           icon={closeOutline}
+          className="prop-chip__remove"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          style={{ fontSize: 14, marginRight: -4 }}
         />
       )}
     </span>

@@ -113,6 +113,7 @@ const LibraryGameModal: React.FC<Props> = ({ isOpen, item, onDismiss }) => {
   };
 
   const game = item?.game;
+  const platforms = game?.platforms ?? [];
 
   return (
     <IonModal isOpen={isOpen} onDidDismiss={() => onDismiss(changedRef.current)}>
@@ -132,6 +133,7 @@ const LibraryGameModal: React.FC<Props> = ({ isOpen, item, onDismiss }) => {
       <IonContent>
         {game && (
           <div className="page-narrow">
+            {/* Hero: cover + title + year only */}
             <div className="detail-hero" style={{ padding: '12px 0' }}>
               <div className="detail-hero__cover" style={{ width: 80, height: 112 }}>
                 {game.coverUrl ? (
@@ -154,32 +156,45 @@ const LibraryGameModal: React.FC<Props> = ({ isOpen, item, onDismiss }) => {
                 {game.releaseYear && (
                   <p className="detail-hero__meta">{game.releaseYear}</p>
                 )}
-                {(game.platforms ?? []).length > 0 && (
-                  <div className="detail-hero__platforms">
-                    {(game.platforms ?? []).map((p) => (
-                      <PlatformBadge
-                        key={p}
-                        name={p}
-                        selected={playedOn === p}
-                        onClick={() => {
-                          const next = playedOn === p ? null : p;
-                          setPlayedOn(next);
-                          patch('playedOn', { playedOn: next });
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
             <IonList inset>
-              <IonItem lines="none">
+              {/* Played on */}
+              {platforms.length > 0 && (
+                <IonItem lines="none" className="section-item">
+                  <IonLabel>
+                    <h3 className="section-h">
+                      Played on
+                      {savingField === 'playedOn' && (
+                        <IonSpinner name="dots" style={{ height: 12, marginLeft: 6 }} />
+                      )}
+                    </h3>
+                    <div className="prop-chip-row">
+                      {platforms.map((p) => (
+                        <PlatformBadge
+                          key={p}
+                          name={p}
+                          selected={playedOn === p}
+                          onClick={() => {
+                            const next = playedOn === p ? null : p;
+                            setPlayedOn(next);
+                            patch('playedOn', { playedOn: next });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </IonLabel>
+                </IonItem>
+              )}
+
+              {/* Status */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">
-                    Status{' '}
+                    Status
                     {savingField === 'status' && (
-                      <IonSpinner name="dots" style={{ height: 12 }} />
+                      <IonSpinner name="dots" style={{ height: 12, marginLeft: 6 }} />
                     )}
                   </h3>
                   <StatusChips
@@ -191,12 +206,17 @@ const LibraryGameModal: React.FC<Props> = ({ isOpen, item, onDismiss }) => {
                   />
                 </IonLabel>
               </IonItem>
-              <IonItem lines="none">
+
+              {/* Rating */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">
-                    Your rating{' '}
+                    Your rating
                     {rating != null && (
                       <span className="section-h__suffix">· {rating.toFixed(1)}/10</span>
+                    )}
+                    {savingField === 'rating' && (
+                      <IonSpinner name="dots" style={{ height: 12, marginLeft: 6 }} />
                     )}
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -223,24 +243,33 @@ const LibraryGameModal: React.FC<Props> = ({ isOpen, item, onDismiss }) => {
                   </div>
                 </IonLabel>
               </IonItem>
-              <IonItem>
-                <IonTextarea
-                  label="Review (public)"
-                  labelPlacement="stacked"
-                  placeholder="What did you think? Visible on your profile."
-                  value={notesDraft}
-                  onIonInput={(e) => setNotesDraft(String(e.detail.value ?? ''))}
-                  onIonBlur={() => {
-                    if (notesDraft !== (userGame?.notes ?? '')) {
-                      patch('notes', { notes: notesDraft });
-                    }
-                  }}
-                  rows={4}
-                  maxlength={2000}
-                  autoGrow
-                />
+
+              {/* Review */}
+              <IonItem lines="none" className="section-item">
+                <IonLabel>
+                  <h3 className="section-h">
+                    Review
+                    <span className="section-h__suffix">· public</span>
+                  </h3>
+                  <IonTextarea
+                    placeholder="What did you think? Visible on your profile."
+                    value={notesDraft}
+                    onIonInput={(e) => setNotesDraft(String(e.detail.value ?? ''))}
+                    onIonBlur={() => {
+                      if (notesDraft !== (userGame?.notes ?? '')) {
+                        patch('notes', { notes: notesDraft });
+                      }
+                    }}
+                    rows={3}
+                    maxlength={2000}
+                    autoGrow
+                    style={{ '--padding-start': '0', '--padding-end': '0', marginTop: 2 } as any}
+                  />
+                </IonLabel>
               </IonItem>
-              <IonItem lines="none">
+
+              {/* Tags */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">Tags</h3>
                   <TagPicker selectedIds={tagIds} onToggle={toggleTag} />

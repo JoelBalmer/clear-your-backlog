@@ -143,6 +143,8 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
     }
   };
 
+  const platforms = picked?.platforms ?? [];
+
   return (
     <IonModal isOpen={isOpen} onDidDismiss={() => dismiss(false)}>
       <IonHeader>
@@ -247,6 +249,7 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
 
         {picked && (
           <div className="page-narrow">
+            {/* Hero: cover + title + year only */}
             <div className="detail-hero" style={{ padding: '12px 0' }}>
               <div className="detail-hero__cover" style={{ width: 80, height: 112 }}>
                 {picked.coverUrl ? (
@@ -269,32 +272,45 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
                 {picked.releaseYear && (
                   <p className="detail-hero__meta">{picked.releaseYear}</p>
                 )}
-                {picked.platforms.length > 0 && (
-                  <div className="detail-hero__platforms">
-                    {picked.platforms.map((p) => (
-                      <PlatformBadge
-                        key={p}
-                        name={p}
-                        selected={playedOn === p}
-                        onClick={() => setPlayedOn(playedOn === p ? null : p)}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
             <IonList inset>
-              <IonItem lines="none">
+              {/* Played on */}
+              {platforms.length > 0 && (
+                <IonItem lines="none" className="section-item">
+                  <IonLabel>
+                    <h3 className="section-h">Played on</h3>
+                    <div className="prop-chip-row">
+                      {platforms.map((p) => (
+                        <PlatformBadge
+                          key={p}
+                          name={p}
+                          selected={playedOn === p}
+                          onClick={() => setPlayedOn(playedOn === p ? null : p)}
+                        />
+                      ))}
+                    </div>
+                  </IonLabel>
+                </IonItem>
+              )}
+
+              {/* Status */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">Status</h3>
                   <StatusChips value={status} onChange={setStatus} />
                 </IonLabel>
               </IonItem>
-              <IonItem lines="none">
+
+              {/* Rating */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">
-                    Rating {rating != null && <span className="section-h__suffix">· {rating.toFixed(1)}/10</span>}
+                    Your rating
+                    {rating != null && (
+                      <span className="section-h__suffix">· {rating.toFixed(1)}/10</span>
+                    )}
                   </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <StarRating value={rating} size={28} onChange={setRating} />
@@ -306,19 +322,28 @@ const AddGameModal: React.FC<Props> = ({ isOpen, onDismiss, initialGame }) => {
                   </div>
                 </IonLabel>
               </IonItem>
-              <IonItem>
-                <IonTextarea
-                  label="Review (public)"
-                  labelPlacement="stacked"
-                  placeholder="What did you think? Visible on your profile."
-                  value={notes}
-                  onIonInput={(e) => setNotes(String(e.detail.value ?? ''))}
-                  rows={4}
-                  maxlength={2000}
-                  autoGrow
-                />
+
+              {/* Review */}
+              <IonItem lines="none" className="section-item">
+                <IonLabel>
+                  <h3 className="section-h">
+                    Review
+                    <span className="section-h__suffix">· public</span>
+                  </h3>
+                  <IonTextarea
+                    placeholder="What did you think? Visible on your profile."
+                    value={notes}
+                    onIonInput={(e) => setNotes(String(e.detail.value ?? ''))}
+                    rows={3}
+                    maxlength={2000}
+                    autoGrow
+                    style={{ '--padding-start': '0', '--padding-end': '0', marginTop: 2 } as any}
+                  />
+                </IonLabel>
               </IonItem>
-              <IonItem lines="none">
+
+              {/* Tags */}
+              <IonItem lines="none" className="section-item">
                 <IonLabel>
                   <h3 className="section-h">Tags</h3>
                   <TagPicker

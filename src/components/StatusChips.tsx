@@ -1,4 +1,6 @@
-import StatusBadge from './StatusBadge';
+import { IonIcon } from '@ionic/react';
+import { checkmarkOutline } from 'ionicons/icons';
+import { STATUS_LABELS, STATUS_COLORS } from './StatusBadge';
 import type { GameStatus } from '../types/models';
 
 const ALL: GameStatus[] = ['wishlist', 'backlog', 'playing', 'played', 'dropped'];
@@ -8,36 +10,27 @@ type Props = {
   onChange: (s: GameStatus) => void;
 };
 
-// Replaces IonSegment for picking a single status. Chips wrap and never
-// truncate to "..." like segments do on narrow widths.
 const StatusChips: React.FC<Props> = ({ value, onChange }) => (
-  <div
-    style={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: 8,
-    }}
-  >
+  <div className="prop-chip-row">
     {ALL.map((s) => {
       const selected = s === value;
+      const c = STATUS_COLORS[s];
       return (
         <button
           key={s}
           type="button"
-          onClick={() => onChange(s)}
+          className={`prop-chip${selected ? ' prop-chip--on' : ''}`}
           style={{
-            background: 'none',
-            padding: 0,
-            border: '1.5px solid transparent',
-            borderRadius: 999,
-            cursor: 'pointer',
-            transform: selected ? 'scale(1.04)' : 'scale(1)',
-            transition: 'transform 0.1s ease, opacity 0.15s ease',
-            opacity: selected ? 1 : 0.55,
-            outline: 'none',
-          }}
+            '--chip-fg': c,
+            '--chip-bg': `${c}15`,
+            '--chip-border': `${c}50`,
+            '--chip-bg-on': `${c}2a`,
+          } as React.CSSProperties}
+          onClick={() => onChange(s)}
         >
-          <StatusBadge status={s} size="md" />
+          <span className="prop-chip__dot" />
+          {STATUS_LABELS[s]}
+          {selected && <IonIcon icon={checkmarkOutline} className="prop-chip__check" />}
         </button>
       );
     })}

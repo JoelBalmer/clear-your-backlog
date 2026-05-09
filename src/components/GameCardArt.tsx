@@ -1,26 +1,53 @@
+import { useRef } from 'react';
 import { IonIcon } from '@ionic/react';
-import { gameControllerOutline } from 'ionicons/icons';
+import { checkmarkOutline, gameControllerOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import StatusBadge from './StatusBadge';
+import { useLongPress } from '../lib/useLongPress';
 import type { UserGameWithGame } from '../types/models';
 
 type Props = {
   item: UserGameWithGame;
   routerLink?: string;
   onClick?: () => void;
+  selectionMode?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
+  onLongPress?: () => void;
 };
 
-const GameCardArt: React.FC<Props> = ({ item, routerLink, onClick }) => {
+const GameCardArt: React.FC<Props> = ({
+  item,
+  routerLink,
+  onClick,
+  selectionMode = false,
+  selected = false,
+  onSelect,
+  onLongPress,
+}) => {
   const { userGame, game } = item;
   const history = useHistory();
 
+  const cardRef = useRef<HTMLButtonElement>(null);
+  useLongPress(cardRef as React.RefObject<HTMLElement>, onLongPress ?? (() => {}), !selectionMode);
+
   const handleClick = () => {
-    if (onClick) { onClick(); }
-    else if (routerLink) history.push(routerLink);
+    if (selectionMode) {
+      onSelect?.();
+    } else if (onClick) {
+      onClick();
+    } else if (routerLink) {
+      history.push(routerLink);
+    }
   };
 
   return (
-    <button type="button" className="art-card" onClick={handleClick}>
+    <button
+      ref={cardRef}
+      type="button"
+      className={`art-card${selected ? ' art-card--selected' : ''}`}
+      onClick={handleClick}
+    >
       {game.coverUrl ? (
         <img src={game.coverUrl} alt={game.name} loading="lazy" className="art-card__img" />
       ) : (
@@ -33,6 +60,11 @@ const GameCardArt: React.FC<Props> = ({ item, routerLink, onClick }) => {
         <p className="art-card__title">{game.name}</p>
         {game.releaseYear && <p className="art-card__year">{game.releaseYear}</p>}
       </div>
+      {selectionMode && (
+        <span className={`art-card__select select-circle${selected ? ' select-circle--on' : ''}`}>
+          {selected && <IonIcon icon={checkmarkOutline} />}
+        </span>
+      )}
     </button>
   );
 };
