@@ -81,6 +81,8 @@
 
 .game-card {
   --inner-padding-end: 12px;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 .game-card__cover {
   position: relative;
@@ -487,40 +489,62 @@
   flex-shrink: 0;
 }
 
-/* ── Status chips (interactive picker in edit modal) ───────────────────── */
-.status-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.status-chip {
+/* ── Unified interactive property chip (status, platform, tag) ───────────── */
+.prop-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px 5px 8px;
+  gap: 4px;
+  padding: 5px 11px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: 1.5px solid;
-  transition: transform 0.1s ease, opacity 0.12s ease;
-  opacity: 0.6;
+  border: 1.5px solid var(--chip-border, rgba(0, 0, 0, 0.2));
+  background: var(--chip-bg, rgba(0, 0, 0, 0.06));
+  color: var(--chip-fg, var(--ion-text-color));
+  white-space: nowrap;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
-.status-chip--on {
-  opacity: 1;
-  transform: scale(1.05);
+.prop-chip--on {
+  background: var(--chip-bg-on, rgba(0, 0, 0, 0.12));
+  border-color: var(--chip-fg, currentColor);
+  border-width: 2px;
 }
-.status-chip__dot {
+.prop-chip__dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
+  background: var(--chip-fg, currentColor);
   flex-shrink: 0;
 }
-.status-chip__label { line-height: 1; }
-.status-chip__check {
+.prop-chip__hash {
+  font-size: 10px;
+  opacity: 0.55;
+  font-weight: 700;
+  line-height: 1;
+}
+.prop-chip__check {
   font-size: 13px;
-  margin-left: 1px;
+}
+.prop-chip__remove {
+  font-size: 14px;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+.prop-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Section items in edit modals ────────────────────────────────────────── */
+.section-item {
+  --padding-top: 12px;
+  --padding-bottom: 12px;
 }
 
 /* ── Platform badges ────────────────────────────────────────────── */
@@ -540,57 +564,6 @@
   border: 1.5px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.1));
   cursor: default;
 }
-/* Interactive badge (button) — shows hover/active states */
-button.platform-badge,
-.platform-badge--interactive {
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-}
-button.platform-badge:not(.platform-badge--selected):hover {
-  border-color: var(--ion-color-step-300, rgba(0, 0, 0, 0.2));
-}
-.platform-badge--selected {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: var(--ion-color-primary, #6366f1);
-  border-width: 2px;
-  color: var(--ion-color-primary, #6366f1);
-  font-weight: 600;
-}
-.platform-badge__check {
-  font-size: 12px;
-}
-
-/* ── Tag chips ──────────────────────────────────────────────────── */
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 10px 3px 7px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border-width: 1.5px;
-  white-space: nowrap;
-  cursor: default;
-}
-.tag-chip--interactive {
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
-}
-.tag-chip__hash {
-  font-size: 10px;
-  opacity: 0.55;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* Platform badges in detail hero */
-.detail-hero__platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}
 
 /* Platform badges in search result rows */
 .search-result__platforms {
@@ -606,6 +579,8 @@ button.platform-badge:not(.platform-badge--selected):hover {
   --padding-top: 6px;
   --padding-bottom: 6px;
   --inner-padding-end: 12px;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 .game-list-row__name {
   font-size: 15px;
@@ -662,6 +637,8 @@ button.platform-badge:not(.platform-badge--selected):hover {
   box-shadow: 0 6px 20px -10px rgba(0, 0, 0, 0.45);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: block;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 .art-card:active {
   transform: scale(0.97);
@@ -710,22 +687,6 @@ button.platform-badge:not(.platform-badge--selected):hover {
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
   letter-spacing: 0.3px;
-}
-
-/* ── Compact list row (GameCardList) ────────────────────────────────────────────── */
-.game-list-row {
-  --min-height: 44px;
-}
-.game-list-row__name {
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.game-list-row__platform {
-  font-size: 12px;
-  flex-shrink: 0;
-  margin-inline-start: 8px;
 }
 
 /* ── Steam import review rows ──────────────────────────────────────────────────── */

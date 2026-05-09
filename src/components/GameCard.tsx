@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { IonIcon, IonItem, IonLabel } from '@ionic/react';
 import { checkmarkOutline, gameControllerOutline } from 'ionicons/icons';
 import StarRating from './StarRating';
@@ -29,18 +30,19 @@ const GameCard: React.FC<Props> = ({
   const rating = userGame.rating != null ? Number(userGame.rating) : null;
   const platforms = (game.platforms ?? []).slice(0, 2);
 
-  const longPress = useLongPress(onLongPress ?? (() => {}), !selectionMode);
+  const cardRef = useRef<HTMLElement>(null);
+  useLongPress(cardRef, onLongPress ?? (() => {}), !selectionMode);
 
   const handleClick = selectionMode ? onSelect : onClick;
 
   return (
     <IonItem
+      ref={cardRef as any}
       button
       detail={false}
       onClick={handleClick}
       routerLink={selectionMode ? undefined : routerLink}
       className={`game-card${selected ? ' game-card--selected' : ''}`}
-      {...longPress}
     >
       <div slot="start" className="game-card__cover">
         {game.coverUrl ? (

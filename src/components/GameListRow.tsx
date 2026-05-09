@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { IonIcon, IonItem } from '@ionic/react';
 import { checkmarkOutline } from 'ionicons/icons';
 import PlatformBadge from './PlatformBadge';
@@ -29,18 +30,19 @@ const GameListRow: React.FC<Props> = ({
   const platforms = (game.platforms ?? []).slice(0, 2);
   const tags = allTags.filter((t) => (item.tagIds ?? []).includes(t.id)).slice(0, 2);
 
-  const longPress = useLongPress(onLongPress ?? (() => {}), !selectionMode);
+  const rowRef = useRef<HTMLElement>(null);
+  useLongPress(rowRef, onLongPress ?? (() => {}), !selectionMode);
 
   const handleClick = selectionMode ? onSelect : onClick;
 
   return (
     <IonItem
+      ref={rowRef as any}
       button
       detail={false}
       routerLink={selectionMode ? undefined : routerLink}
       onClick={handleClick}
       className={`game-list-row${selected ? ' game-list-row--selected' : ''}`}
-      {...longPress}
     >
       {selectionMode && (
         <div slot="start" className="game-list-row__select">

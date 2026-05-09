@@ -11,27 +11,26 @@ type Props = {
 };
 
 const StatusChips: React.FC<Props> = ({ value, onChange }) => (
-  <div className="status-chips">
+  <div className="prop-chip-row">
     {ALL.map((s) => {
       const selected = s === value;
-      const color = STATUS_COLORS[s];
+      const c = STATUS_COLORS[s];
       return (
         <button
           key={s}
           type="button"
-          className={`status-chip${selected ? ' status-chip--on' : ''}`}
+          className={`prop-chip${selected ? ' prop-chip--on' : ''}`}
           style={{
-            background: selected ? `${color}28` : `${color}12`,
-            color,
-            borderColor: selected ? color : `${color}50`,
-          }}
+            '--chip-fg': c,
+            '--chip-bg': `${c}15`,
+            '--chip-border': `${c}50`,
+            '--chip-bg-on': `${c}2a`,
+          } as React.CSSProperties}
           onClick={() => onChange(s)}
         >
-          <span className="status-chip__dot" style={{ background: color }} />
-          <span className="status-chip__label">{STATUS_LABELS[s]}</span>
-          {selected && (
-            <IonIcon icon={checkmarkOutline} className="status-chip__check" />
-          )}
+          <span className="prop-chip__dot" />
+          {STATUS_LABELS[s]}
+          {selected && <IonIcon icon={checkmarkOutline} className="prop-chip__check" />}
         </button>
       );
     })}

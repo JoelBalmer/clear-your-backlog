@@ -1,38 +1,70 @@
-import { useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const LONG_PRESS_MS = 500;
+const MOVE_THRESHOLD = 10;
 
-export function useLongPress(callback: () => void, enabled = true) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const moved = useRef(false);
+/**
+ * Attaches native pointer listeners directly to a DOM ref so the long-press
+ * fires reliably even when the element uses Ionic's shadow DOM (where React
+ * synthetic events don't propagate correctly).
+ */
+export function useLongPress(
+  ref: React.RefObject<HTMLElement>,
+  callback: () => void,
+  enabled = true,
+) {
+  // Keep callback current without re-running the effect on every render.
+  const cbRef = useRef(callback);
+  useEffect(() => { cbRef.current = callback; });
 
-  const start = useCallback(
-    (e: React.PointerEvent) => {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let startX = 0;
+    let startY = 0;
+
+    const onDown = (e: PointerEvent) => {
       if (!enabled) return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      moved.current = false;
-      timer.current = setTimeout(() => {
-        if (!moved.current) callback();
+      startX = e.clientX;
+      startY = e.clientY;
+      timer = setTimeout(() => {
+        timer = null;
+        cbRef.current();
       }, LONG_PRESS_MS);
-    },
-    [callback, enabled],
-  );
+    };
 
-  const cancel = useCallback(() => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-  }, []);
+    const onCancel = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+    };
 
-  return {
-    onPointerDown: start,
-    onPointerUp: cancel,
-    onPointerLeave: cancel,
-    onPointerMove: () => {
-      moved.current = true;
-      cancel();
-    },
-    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
-  };
+    const onMove = (e: PointerEvent) => {
+      if (
+        Math.abs(e.clientX - startX) > MOVE_THRESHOLD ||
+        Math.abs(e.clientY - startY) > MOVE_THRESHOLD
+      ) {
+        onCancel();
+      }
+    };
+
+    const onCtx = (e: Event) => e.preventDefault();
+
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointerup', onCancel);
+    el.addEventListener('pointercancel', onCancel);
+    el.addEventListener('pointerleave', onCancel);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('contextmenu', onCtx);
+
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('pointerup', onCancel);
+      el.removeEventListener('pointercancel', onCancel);
+      el.removeEventListener('pointerleave', onCancel);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('contextmenu', onCtx);
+    };
+  }, [ref, enabled]);
 }

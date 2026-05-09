@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { IonIcon } from '@ionic/react';
 import { checkmarkOutline, gameControllerOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -27,7 +28,8 @@ const GameCardArt: React.FC<Props> = ({
   const { userGame, game } = item;
   const history = useHistory();
 
-  const longPress = useLongPress(onLongPress ?? (() => {}), !selectionMode);
+  const cardRef = useRef<HTMLButtonElement>(null);
+  useLongPress(cardRef as React.RefObject<HTMLElement>, onLongPress ?? (() => {}), !selectionMode);
 
   const handleClick = () => {
     if (selectionMode) {
@@ -41,10 +43,10 @@ const GameCardArt: React.FC<Props> = ({
 
   return (
     <button
+      ref={cardRef}
       type="button"
       className={`art-card${selected ? ' art-card--selected' : ''}`}
       onClick={handleClick}
-      {...longPress}
     >
       {game.coverUrl ? (
         <img src={game.coverUrl} alt={game.name} loading="lazy" className="art-card__img" />
