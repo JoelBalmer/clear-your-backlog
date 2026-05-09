@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  IonAlert,
   IonButton,
   IonButtons,
   IonContent,
@@ -17,8 +18,18 @@ import {
   IonToolbar,
   useIonViewWillEnter,
 } from '@ionic/react';
-import { add, gridOutline, libraryOutline, listOutline, reorderFourOutline, optionsOutline } from 'ionicons/icons';
+import {
+  add,
+  checkmarkOutline,
+  gridOutline,
+  libraryOutline,
+  listOutline,
+  optionsOutline,
+  reorderFourOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { ApiError, useApi } from '../lib/api';
+import { bump as hapticBump, success as hapticSuccess, tap as hapticTap } from '../lib/haptics';
 import GameCard from '../components/GameCard';
 import GameCardArt from '../components/GameCardArt';
 import GameListRow from '../components/GameListRow';
@@ -37,8 +48,8 @@ const STORAGE_KEY = 'library-view';
 
 function readViewMode(): ViewMode {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'list') return 'detail'; // old name for detail view
-  if (stored === 'text') return 'list';   // old name for compact list view
+  if (stored === 'list') return 'detail';
+  if (stored === 'text') return 'list';
   if (stored === 'cards' || stored === 'detail') return stored;
   return 'detail';
 }
@@ -55,6 +66,11 @@ const Library: React.FC = () => {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [activeTagIds, setActiveTagIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(readViewMode);
+
+  // Multi-select state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmBatchDelete, setConfirmBatchDelete] = useState(false);
 
   const cycleView = () => {
     setViewMode((prev) => {
@@ -93,44 +109,124 @@ const Library: React.FC = () => {
     load();
   });
 
+  const enterSelection = (id: string) => {
+    hapticBump();
+    setSelectionMode(true);
+    setSelectedIds(new Set([id]));
+  };
+
+  const exitSelection = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelect = (id: string) => {
+    hapticTap();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    if (!items) return;
+    const allIds = new Set(items.map((i) => i.userGame.id));
+    if (selectedIds.size === allIds.size) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(allIds);
+    }
+  };
+
+  const batchDelete = async () => {
+    const ids = Array.from(selectedIds);
+    try {
+      await Promise.all(ids.map((id) => api(`/api/user-games/${id}`, { method: 'DELETE' })));
+      hapticSuccess();
+    } catch (err) {
+      console.error('[library] batch delete error:', err);
+    }
+    exitSelection();
+    load();
+  };
+
   const activeFilterCount = statuses.length + activeTagIds.length;
+  const allSelected = items != null && selectedIds.size === items.length && items.length > 0;
 
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Library</IonTitle>
-          <IonButtons slot="end">
-            <IonButton fill="clear" onClick={cycleView} aria-label="Cycle view mode">
-              <IonIcon icon={viewMode === 'cards' ? gridOutline : viewMode === 'detail' ? listOutline : reorderFourOutline} />
-            </IonButton>
-            <ThemeButton />
-          </IonButtons>
-        </IonToolbar>
-        <IonToolbar>
-          <div className="library-toolbar">
-            <IonButton
-              fill="outline"
-              size="small"
-              className="library-toolbar__filter"
-              onClick={() => setShowFilter(true)}
-            >
-              <IonIcon icon={optionsOutline} slot="start" />
-              Filter
-              {activeFilterCount > 0 && (
-                <span className="library-toolbar__count">{activeFilterCount}</span>
-              )}
-            </IonButton>
-            <IonNote color="medium" style={{ fontSize: 12, marginLeft: 'auto' }}>
-              {sort === 'recent' && 'Recently updated'}
-              {sort === 'rating' && 'Highest rated'}
-              {sort === 'name' && 'A–Z'}
-            </IonNote>
-          </div>
-        </IonToolbar>
+        {selectionMode ? (
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton onClick={exitSelection}>Cancel</IonButton>
+            </IonButtons>
+            <IonTitle>{selectedIds.size} selected</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={selectAll} aria-label={allSelected ? 'Deselect all' : 'Select all'}>
+                <IonIcon icon={checkmarkOutline} />
+              </IonButton>
+              <IonButton
+                color="danger"
+                disabled={selectedIds.size === 0}
+                onClick={() => setConfirmBatchDelete(true)}
+                aria-label="Delete selected"
+              >
+                <IonIcon icon={trashOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        ) : (
+          <>
+            <IonToolbar>
+              <IonTitle>Library</IonTitle>
+              <IonButtons slot="end">
+                <IonButton fill="clear" onClick={cycleView} aria-label="Cycle view mode">
+                  <IonIcon
+                    icon={
+                      viewMode === 'cards'
+                        ? gridOutline
+                        : viewMode === 'detail'
+                          ? listOutline
+                          : reorderFourOutline
+                    }
+                  />
+                </IonButton>
+                <ThemeButton />
+              </IonButtons>
+            </IonToolbar>
+            <IonToolbar>
+              <div className="library-toolbar">
+                <IonButton
+                  fill="outline"
+                  size="small"
+                  className="library-toolbar__filter"
+                  onClick={() => setShowFilter(true)}
+                >
+                  <IonIcon icon={optionsOutline} slot="start" />
+                  Filter
+                  {activeFilterCount > 0 && (
+                    <span className="library-toolbar__count">{activeFilterCount}</span>
+                  )}
+                </IonButton>
+                <IonNote color="medium" style={{ fontSize: 12, marginLeft: 'auto' }}>
+                  {sort === 'recent' && 'Recently updated'}
+                  {sort === 'rating' && 'Highest rated'}
+                  {sort === 'name' && 'A–Z'}
+                </IonNote>
+              </div>
+            </IonToolbar>
+          </>
+        )}
       </IonHeader>
       <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={(e) => load().finally(() => e.detail.complete())}>
+        <IonRefresher
+          slot="fixed"
+          disabled={selectionMode}
+          onIonRefresh={(e) => load().finally(() => e.detail.complete())}
+        >
           <IonRefresherContent />
         </IonRefresher>
 
@@ -187,6 +283,10 @@ const Library: React.FC = () => {
                 key={item.userGame.id}
                 item={item}
                 onClick={() => setSelectedItem(item)}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(item.userGame.id)}
+                onSelect={() => toggleSelect(item.userGame.id)}
+                onLongPress={() => enterSelection(item.userGame.id)}
               />
             ))}
           </IonList>
@@ -199,6 +299,10 @@ const Library: React.FC = () => {
                 key={item.userGame.id}
                 item={item}
                 onClick={() => setSelectedItem(item)}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(item.userGame.id)}
+                onSelect={() => toggleSelect(item.userGame.id)}
+                onLongPress={() => enterSelection(item.userGame.id)}
               />
             ))}
           </div>
@@ -212,16 +316,22 @@ const Library: React.FC = () => {
                 item={item}
                 allTags={allTags}
                 onClick={() => setSelectedItem(item)}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(item.userGame.id)}
+                onSelect={() => toggleSelect(item.userGame.id)}
+                onLongPress={() => enterSelection(item.userGame.id)}
               />
             ))}
           </IonList>
         )}
 
-        <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton onClick={() => setShowAdd(true)}>
-            <IonIcon icon={add} />
-          </IonFabButton>
-        </IonFab>
+        {!selectionMode && (
+          <IonFab slot="fixed" vertical="bottom" horizontal="end">
+            <IonFabButton onClick={() => setShowAdd(true)}>
+              <IonIcon icon={add} />
+            </IonFabButton>
+          </IonFab>
+        )}
 
         <LibraryGameModal
           isOpen={!!selectedItem}
@@ -255,6 +365,17 @@ const Library: React.FC = () => {
             setActiveTagIds([]);
             setSort('recent');
           }}
+        />
+
+        <IonAlert
+          isOpen={confirmBatchDelete}
+          onDidDismiss={() => setConfirmBatchDelete(false)}
+          header={`Remove ${selectedIds.size} game${selectedIds.size === 1 ? '' : 's'}?`}
+          message="This permanently removes your ratings, notes, and tags for these games."
+          buttons={[
+            { text: 'Cancel', role: 'cancel' },
+            { text: 'Remove', role: 'destructive', handler: batchDelete },
+          ]}
         />
       </IonContent>
     </IonPage>

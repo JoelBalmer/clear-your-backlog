@@ -1,3 +1,6 @@
+import { IonIcon } from '@ionic/react';
+import { checkmarkOutline } from 'ionicons/icons';
+
 type Props = {
   name: string;
   selected?: boolean;
@@ -5,19 +8,18 @@ type Props = {
 };
 
 const PlatformBadge: React.FC<Props> = ({ name, selected = false, onClick }) => {
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        className={`platform-badge${selected ? ' platform-badge--selected' : ''}`}
-        onClick={onClick}
-      >
-        {name}
-      </button>
-    );
-  }
+  const Tag = onClick ? 'button' : 'span';
   return (
-    <span className={`platform-badge${selected ? ' platform-badge--selected' : ''}`}>{name}</span>
+    <Tag
+      type={onClick ? 'button' : undefined}
+      className={`platform-badge${selected ? ' platform-badge--selected' : ''}${onClick ? ' platform-badge--interactive' : ''}`}
+      onClick={onClick}
+    >
+      {onClick && selected && (
+        <IonIcon icon={checkmarkOutline} className="platform-badge__check" />
+      )}
+      {name}
+    </Tag>
   );
 };
 

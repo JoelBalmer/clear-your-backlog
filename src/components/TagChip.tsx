@@ -11,29 +11,19 @@ type Props = {
 
 const TagChip: React.FC<Props> = ({ name, color, selected = false, onClick, onRemove }) => {
   const accent = color ?? '#6366f1';
-  const bg = selected ? `${accent}33` : `${accent}1a`;
-  const fg = selected ? accent : 'var(--ion-text-color, #111)';
-  const border = selected ? accent : 'transparent';
 
   return (
     <span
-      onClick={onClick}
+      className={`tag-chip${selected ? ' tag-chip--on' : ''}${onClick ? ' tag-chip--interactive' : ''}`}
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 10px',
-        borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
-        background: bg,
-        color: fg,
-        border: `1px solid ${border}`,
-        cursor: onClick || onRemove ? 'pointer' : 'default',
-        userSelect: 'none',
-        whiteSpace: 'nowrap',
+        background: selected ? `${accent}28` : `${accent}14`,
+        color: accent,
+        borderColor: selected ? accent : `${accent}55`,
+        borderStyle: selected ? 'solid' : 'dashed',
       }}
+      onClick={onClick}
     >
+      <span className="tag-chip__hash">#</span>
       {name}
       {onRemove && (
         <IonIcon
