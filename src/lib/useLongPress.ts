@@ -11,7 +11,7 @@ const MOVE_THRESHOLD = 12;
  * all shadow DOM event propagation issues entirely.
  */
 export function useLongPress(
-  ref: React.RefObject<HTMLElement>,
+  ref: React.RefObject<HTMLElement | null>,
   callback: () => void,
   enabled = true,
 ) {
@@ -34,7 +34,7 @@ export function useLongPress(
       return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
     };
 
-    // ── Touch (mobile) ──────────────────────────────────────────────────────────────────────
+    // ── Touch (mobile) ─────────────────────────────────────────────────────────────────────────────────────
     const onTouchStart = (e: TouchEvent) => {
       const t = e.touches[0];
       if (!inBounds(t.clientX, t.clientY)) return;
@@ -50,7 +50,7 @@ export function useLongPress(
           Math.abs(t.clientY - startY) > MOVE_THRESHOLD) cancel();
     };
 
-    // ── Mouse (desktop) ─────────────────────────────────────────────────────────────────────
+    // ── Mouse (desktop) ──────────────────────────────────────────────────────────────────────────────────────
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0 || !inBounds(e.clientX, e.clientY)) return;
       startX = e.clientX;
