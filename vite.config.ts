@@ -18,6 +18,11 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkPubKey),
     },
+    server: {
+      proxy: {
+        '/api': 'http://localhost:3000',
+      },
+    },
     test: {
       globals: true,
       environment: 'jsdom',

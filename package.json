@@ -7,7 +7,10 @@
     "node": "22.x"
   },
   "scripts": {
+    "setup": "node scripts/setup.js",
     "dev": "vite",
+    "dev:api": "dotenv -e .env.development.local -- tsx watch server.ts",
+    "start": "concurrently -n vite,api -c cyan,yellow \"npm run dev\" \"npm run dev:api\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
@@ -20,8 +23,6 @@
     "db:studio": "dotenv -e .env.development.local -- drizzle-kit studio"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "tsx": "^4.19.3",
     "@capacitor/app": "8.1.0",
     "@capacitor/core": "8.3.1",
     "@capacitor/haptics": "8.0.2",
@@ -35,12 +36,14 @@
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "drizzle-orm": "^0.45.2",
+    "express": "^5.1.0",
     "ionicons": "^7.4.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
-    "svix": "^1.92.2"
+    "svix": "^1.92.2",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@capacitor/cli": "8.3.1",
@@ -55,6 +58,7 @@
     "@vercel/node": "^5.7.15",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitejs/plugin-react": "^4.0.1",
+    "concurrently": "^9.2.1",
     "cypress": "^13.5.0",
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.10",
