@@ -4,13 +4,11 @@ const LONG_PRESS_MS = 500;
 const MOVE_THRESHOLD = 12;
 
 /**
- * Long-press detection using touch events (reliable on iOS in scrollable lists)
- * with mouse event fallback for desktop.
- *
- * Pointer events are intentionally avoided: on iOS, IonContent's scroll
- * detection fires pointercancel within ~200ms, killing the long-press timer
- * before it fires. Touch events let us independently track the gesture without
- * the browser hijacking it for scrolling.
+ * Long-press detection using document-level listeners + bounding-box hit
+ * testing. Element-level listeners are unreliable for Ionic components because
+ * touch events don't always re-target correctly when exiting Stencil's shadow
+ * DOM. Attaching to document and checking getBoundingClientRect() sidesteps
+ * all shadow DOM event propagation issues entirely.
  */
 export function useLongPress(
   ref: React.RefObject<HTMLElement>,
@@ -22,39 +20,39 @@ export function useLongPress(
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !enabled) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     let startX = 0;
     let startY = 0;
 
-    const fire = () => {
-      timer = null;
-      cbRef.current();
-    };
+    const fire = () => { timer = null; cbRef.current(); };
+    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
 
-    const cancel = () => {
-      if (timer) { clearTimeout(timer); timer = null; }
+    const inBounds = (x: number, y: number) => {
+      const r = el.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
     };
 
     // ── Touch (mobile) ──────────────────────────────────────────────────────────────────────
     const onTouchStart = (e: TouchEvent) => {
-      if (!enabled) return;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+      const t = e.touches[0];
+      if (!inBounds(t.clientX, t.clientY)) return;
+      startX = t.clientX;
+      startY = t.clientY;
       timer = setTimeout(fire, LONG_PRESS_MS);
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (!timer) return;
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) cancel();
+      const t = e.changedTouches[0];
+      if (Math.abs(t.clientX - startX) > MOVE_THRESHOLD ||
+          Math.abs(t.clientY - startY) > MOVE_THRESHOLD) cancel();
     };
 
     // ── Mouse (desktop) ─────────────────────────────────────────────────────────────────────
     const onMouseDown = (e: MouseEvent) => {
-      if (!enabled || e.button !== 0) return;
+      if (e.button !== 0 || !inBounds(e.clientX, e.clientY)) return;
       startX = e.clientX;
       startY = e.clientY;
       timer = setTimeout(fire, LONG_PRESS_MS);
@@ -62,31 +60,26 @@ export function useLongPress(
 
     const onMouseMove = (e: MouseEvent) => {
       if (!timer) return;
-      if (Math.abs(e.clientX - startX) > MOVE_THRESHOLD || Math.abs(e.clientY - startY) > MOVE_THRESHOLD) cancel();
+      if (Math.abs(e.clientX - startX) > MOVE_THRESHOLD ||
+          Math.abs(e.clientY - startY) > MOVE_THRESHOLD) cancel();
     };
 
-    const onCtx = (e: Event) => { if (timer) e.preventDefault(); };
-
-    el.addEventListener('touchstart',  onTouchStart,  { passive: true });
-    el.addEventListener('touchend',    cancel,         { passive: true });
-    el.addEventListener('touchcancel', cancel,         { passive: true });
-    el.addEventListener('touchmove',   onTouchMove,    { passive: true });
-    el.addEventListener('mousedown',   onMouseDown);
-    el.addEventListener('mouseup',     cancel);
-    el.addEventListener('mouseleave',  cancel);
-    el.addEventListener('mousemove',   onMouseMove);
-    el.addEventListener('contextmenu', onCtx);
+    document.addEventListener('touchstart',  onTouchStart, { passive: true });
+    document.addEventListener('touchend',    cancel,        { passive: true });
+    document.addEventListener('touchcancel', cancel,        { passive: true });
+    document.addEventListener('touchmove',   onTouchMove,   { passive: true });
+    document.addEventListener('mousedown',   onMouseDown);
+    document.addEventListener('mouseup',     cancel);
+    document.addEventListener('mousemove',   onMouseMove);
 
     return () => {
-      el.removeEventListener('touchstart',  onTouchStart);
-      el.removeEventListener('touchend',    cancel);
-      el.removeEventListener('touchcancel', cancel);
-      el.removeEventListener('touchmove',   onTouchMove);
-      el.removeEventListener('mousedown',   onMouseDown);
-      el.removeEventListener('mouseup',     cancel);
-      el.removeEventListener('mouseleave',  cancel);
-      el.removeEventListener('mousemove',   onMouseMove);
-      el.removeEventListener('contextmenu', onCtx);
+      document.removeEventListener('touchstart',  onTouchStart);
+      document.removeEventListener('touchend',    cancel);
+      document.removeEventListener('touchcancel', cancel);
+      document.removeEventListener('touchmove',   onTouchMove);
+      document.removeEventListener('mousedown',   onMouseDown);
+      document.removeEventListener('mouseup',     cancel);
+      document.removeEventListener('mousemove',   onMouseMove);
     };
   }, [ref, enabled]);
 }
